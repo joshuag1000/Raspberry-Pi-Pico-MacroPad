@@ -6,3 +6,4 @@ void IRRecieveCode(int IRCode);
 
 bool UseIR();
 bool TinyUsbBinkingTask();
+int DimLedDuration();

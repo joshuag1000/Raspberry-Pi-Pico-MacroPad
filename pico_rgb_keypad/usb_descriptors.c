@@ -73,9 +73,9 @@ uint8_t const *tud_descriptor_device_cb(void) {
 uint8_t const desc_hid_report[] =
         {
                 TUD_HID_REPORT_DESC_KEYBOARD(HID_REPORT_ID(REPORT_ID_KEYBOARD)),
+                // I have pulled in the mouse options here incase you would like to use them but the codebase does not currently support that.
                 TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(REPORT_ID_MOUSE)),
                 TUD_HID_REPORT_DESC_CONSUMER( HID_REPORT_ID(REPORT_ID_CONSUMER_CONTROL))
-                //HID_USAGE_PAGE_CONSUMER
         };
 
 // Invoked when received GET HID REPORT DESCRIPTOR

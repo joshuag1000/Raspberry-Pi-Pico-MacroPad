@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-//#include "pico/stdlib.h"
 #include <string.h>
 
 // TINYUSB LIBRARIES
@@ -12,12 +11,13 @@
 // include my settings file
 #include "Settings.h"
 
+// include the RGB keypad's config file.
 #include "pico_rgb_keypad.hpp"
 
 using namespace pimoroni;
-
 PicoRGBKeypad pico_keypad;
 
+// These are needed to provide a simple link that allows the settings file to change the keypads settings.
 void IlluminateKeypad(int LED, int R, int G, int B) {
     pico_keypad.illuminate(LED, R, G, B);
 }
@@ -26,17 +26,13 @@ void UpdateKeypad() {
     pico_keypad.update();
 }
 
-//--------------------------------------------------------------------+
-// MY CODE
-//--------------------------------------------------------------------+
-
 // predeclaring
 void ButtonDown(int buttonValue);
 void IRRecieveCode(int RCode);
 //int PressKey(uint8_t keycode[6]);
 
 //--------------------------------------------------------------------+
-// CODE FOR USB TINY
+// CODE FOR USB TINY - Generic code for TinyUSB
 //--------------------------------------------------------------------+
 
 enum
@@ -52,7 +48,7 @@ void led_blinking_task(void);
 void KeyboardGo();
 void InitIR() ;
 
-//struct repeating_timer timer;
+// This timer is used to reset the colours on the LEDS when a button is pressed (when a button is pressed it's colour is changed to yellow)
 bool TimerCancelled = true;
 int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
 {
@@ -61,6 +57,7 @@ int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
     return 0;
 }
 
+// simple timer that will DIM the led's when called. The timer is started below.
 struct repeating_timer timer;
 bool LEDDimClock = false;
 bool DimLEDTimer(struct repeating_timer *t) {
@@ -75,23 +72,22 @@ uint16_t last_button_states = 0;
 
 int main()
 {
-    //init the serial over usb
-    //stdio_init_all();
-
     // init the keypad
     pico_keypad.init();
     pico_keypad.set_brightness(1.0f);
 
+    // Sets the default Colours
     DefaultColours();
 
     // init tiny usb
     board_init();
     tusb_init();
+    // Inits the IR (when there is code for that) if the IR option is enabled.
     if (UseIR() == true){
         InitIR();
     }
 
-    add_repeating_timer_ms(300000, DimLEDTimer, NULL, &timer);
+    add_repeating_timer_ms(DimLedDuration(), DimLEDTimer, NULL, &timer);
     LEDDimClock = true;
 
     while (true)
@@ -101,6 +97,7 @@ int main()
             led_blinking_task();
         }
 
+        // This is where the checking to see if a button is pressed and if the IR sensor has recieved a code.
         KeyboardGo();
 
         tud_task(); // tinyusb device task
@@ -181,7 +178,7 @@ void KeyboardGo()
     start_ms += interval_ms;
     //uint32_t const btn = 1;
 
-    // Remote wakeup
+    // Remote wakeup THIS WILL KEEP YOUR PC ON (I THINK) AND PREVENT IT FROM SLEEPING
     if (tud_suspended())
     {
         // Wake up host if we are in suspend mode
@@ -209,6 +206,7 @@ void KeyboardGo()
                     while (number >>= 1)
                         ++ButtonLEDAddr;
 
+                    // if the timer that dims the leds after 5 mins is running cancel it. if it isn't then reset the led brightness
                     if (LEDDimClock == true) {
                         cancel_repeating_timer(&timer);
                         LEDDimClock = false;
@@ -228,22 +226,29 @@ void KeyboardGo()
                             add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
                         }
                     }   
+
+                    // call the function in the settings file to run the code that will press the key.
                     ButtonDown(ButtonLEDAddr);
-                    add_repeating_timer_ms(300000, DimLEDTimer, NULL, &timer);
+
+                    // restart the timer that will dim the leds after 5 mins
+                    add_repeating_timer_ms(DimLedDuration(), DimLEDTimer, NULL, &timer);
                     LEDDimClock = true;
                 }
             }
             last_button_states = button_states;
 
-            // Future addition - Add IR
+            //--------------------------------------------------------------------+
+            // Future addition - Add IR - THIS WILL CHANGE IN THE FUTURE.
+            //--------------------------------------------------------------------+
             int IRCode = 0;
             // Check here to see if there has been a new IR code recieved.
             bool IRRecievedCode = false;
 
-            // TO ADD - IR CODE
+            // TO ADD - IR CODE (fetch IR Code if there is one)
 
             if (IRRecievedCode == true && UseIR() == true)
             {
+                // if the ir sensor is enabled and the sensor recieves a code then call the sub in the settings file which will handle the ir code.
                 IRRecieveCode(IRCode);
             }
             // ----------------------
@@ -301,8 +306,3 @@ void led_blinking_task(void)
     board_led_write(led_state);
     led_state = 1 - led_state; // toggle
 }
-
-//--------------------------------------------------------------------+
-// Making TinyUSB a little easier to use
-//--------------------------------------------------------------------+
-
