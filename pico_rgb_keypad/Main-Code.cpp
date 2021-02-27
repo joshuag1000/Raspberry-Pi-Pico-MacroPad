@@ -18,11 +18,13 @@ using namespace pimoroni;
 PicoRGBKeypad pico_keypad;
 
 // These are needed to provide a simple link that allows the settings file to change the keypads settings.
-void IlluminateKeypad(int LED, int R, int G, int B) {
+void IlluminateKeypad(int LED, int R, int G, int B)
+{
     pico_keypad.illuminate(LED, R, G, B);
 }
 
-void UpdateKeypad() {
+void UpdateKeypad()
+{
     pico_keypad.update();
 }
 
@@ -46,7 +48,7 @@ static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
 void led_blinking_task(void);
 void KeyboardGo();
-void InitIR() ;
+void InitIR();
 
 // This timer is used to reset the colours on the LEDS when a button is pressed (when a button is pressed it's colour is changed to yellow)
 bool TimerCancelled = true;
@@ -60,7 +62,8 @@ int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
 // simple timer that will DIM the led's when called. The timer is started below.
 struct repeating_timer timer;
 bool LEDDimClock = false;
-bool DimLEDTimer(struct repeating_timer *t) {
+bool DimLEDTimer(struct repeating_timer *t)
+{
     pico_keypad.set_brightness(0.2f);
     pico_keypad.update();
     LEDDimClock = false;
@@ -83,7 +86,8 @@ int main()
     board_init();
     tusb_init();
     // Inits the IR (when there is code for that) if the IR option is enabled.
-    if (UseIR() == true){
+    if (UseIR() == true)
+    {
         InitIR();
     }
 
@@ -145,25 +149,25 @@ static bool has_consumer_key = false;
 // PressKey Allows a key to be easily pressed. This can be used with Media keys and normal keyboard keys.
 void PressKey(int Keycode, int ModifierKeys, bool MediaKey)
 {
-    if (MediaKey == true) {
+    if (MediaKey == true)
+    {
         uint16_t CodeToUse = Keycode;
         tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &CodeToUse, 2);
         tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &CodeToUse, 2);
         has_consumer_key = true;
-    } else
+    }
+    else
     {
         uint8_t CodeToUse[6] = {Keycode, 0, 0, 0, 0, 0};
         tud_hid_keyboard_report(REPORT_ID_KEYBOARD, ModifierKeys, CodeToUse);
         tud_hid_keyboard_report(REPORT_ID_KEYBOARD, ModifierKeys, CodeToUse);
         has_key = true;
     }
-    
 }
 
 // This will be used to initialise the IR sensor for when there is one.
-void InitIR() 
+void InitIR()
 {
-
 }
 
 // This will toggle the inputted key on the keyboard.
@@ -207,10 +211,13 @@ void KeyboardGo()
                         ++ButtonLEDAddr;
 
                     // if the timer that dims the leds after 5 mins is running cancel it. if it isn't then reset the led brightness
-                    if (LEDDimClock == true) {
+                    if (LEDDimClock == true)
+                    {
                         cancel_repeating_timer(&timer);
                         LEDDimClock = false;
-                    } else {
+                    }
+                    else
+                    {
                         pico_keypad.set_brightness(1.0f);
                         pico_keypad.update();
                     }
@@ -225,7 +232,7 @@ void KeyboardGo()
                             TimerCancelled = false;
                             add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
                         }
-                    }   
+                    }
 
                     // call the function in the settings file to run the code that will press the key.
                     ButtonDown(ButtonLEDAddr);
@@ -256,9 +263,11 @@ void KeyboardGo()
         else
         {
             // send empty key report if previously has key pressed
-            if (has_key) tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
+            if (has_key)
+                tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
             uint16_t empty_key = 0;
-            if (has_consumer_key) tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
+            if (has_consumer_key)
+                tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
             has_consumer_key = false;
             has_key = false;
         }

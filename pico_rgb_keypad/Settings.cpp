@@ -11,17 +11,20 @@
 #include "Main-Code.h"
 
 // Set this value to true if you are using an ir reciever with the keypad
-bool UseIR() {
+bool UseIR()
+{
     return false;
 }
 
 // Set this to true if you want the TinyUSB blinking task to run
-bool TinyUsbBinkingTask() {
+bool TinyUsbBinkingTask()
+{
     return false;
 }
 
 // Allows the user to set the duration before the LED's will dim again
-int DimLedDuration() {
+int DimLedDuration()
+{
     return 300000;
 }
 
@@ -64,7 +67,7 @@ void ButtonDown(int buttonValue)
         // CTRL + SHIFT + O.
         PressKey(HID_KEY_O, KEYBOARD_MODIFIER_LEFTCTRL + KEYBOARD_MODIFIER_LEFTSHIFT, false);
         break;
-    
+
     case 1:
         // CTRL + UP_ARROW.
         PressKey(HID_KEY_ARROW_UP, KEYBOARD_MODIFIER_LEFTCTRL, false);
@@ -129,18 +132,17 @@ void ButtonDown(int buttonValue)
         break;
 
     case 15:
-        // Windows + L. 
+        // Windows + L.
         PressKey(HID_KEY_L, KEYBOARD_MODIFIER_LEFTGUI, false);
         break;
 
     default:
         break;
     }
-    
 }
 
 // This can be ignored if the IR sensor is disabled. DO NOT DELETE AS IT WILL BREAK THE CODE.
-void IRRecieveCode(int IRCode) 
+void IRRecieveCode(int IRCode)
 {
-
+    
 }
