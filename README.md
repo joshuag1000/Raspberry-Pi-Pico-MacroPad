@@ -10,6 +10,6 @@ ONLY KEYS FROM THE NORMAL KEYBOARD AND THE CONSUMER KEYBOARD are supported by de
 The Code cannot be published pre-compiled because all of the keybinds are set in the code. <br>
 <br>
 # Links
-https://thepihut.com/products/raspberry-pi-pico
-https://shop.pimoroni.com/products/raspberry-pi-pico?variant=32402092294227
-https://shop.pimoroni.com/products/pico-rgb-keypad-base
+https://thepihut.com/products/raspberry-pi-pico <br>
+https://shop.pimoroni.com/products/raspberry-pi-pico?variant=32402092294227 <br>
+https://shop.pimoroni.com/products/pico-rgb-keypad-base <br>
