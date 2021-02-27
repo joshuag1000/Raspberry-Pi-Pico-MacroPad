@@ -168,6 +168,7 @@ void PressKey(int Keycode, int ModifierKeys, bool MediaKey)
 // This will be used to initialise the IR sensor for when there is one.
 void InitIR()
 {
+    
 }
 
 // This will toggle the inputted key on the keyboard.
