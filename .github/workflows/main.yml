@@ -37,6 +37,7 @@ jobs:
           export SKIP_UART='1'
           chmod +x ./pico_setup.sh
           ./pico_setup.sh
+          export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           mkdir build
           cd build
           cmake ..
