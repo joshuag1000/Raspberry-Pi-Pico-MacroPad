@@ -35,7 +35,7 @@ jobs:
           wget https://raw.githubusercontent.com/raspberrypi/pico-setup/master/pico_setup.sh
           export SKIP_VSCODE='1'
           chmod +x ./pico_setup.sh
-          pico_setup.sh
+          ./pico_setup.sh
           mkdir build
           cd build
           cmake
