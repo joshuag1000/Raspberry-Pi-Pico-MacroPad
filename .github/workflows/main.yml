@@ -39,5 +39,5 @@ jobs:
           ./pico_setup.sh
           mkdir build
           cd build
-          cmake
+          cmake ..
           make -j4
