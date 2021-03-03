@@ -1,4 +1,5 @@
 # Raspberry-Pi-Pico-MacroPad
+[![Compile For the Pico.](https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/actions/workflows/main.yml/badge.svg)](https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/actions/workflows/main.yml)<br>
 This code allows you to use the Pimoroni RGB Keypad for the Pico as a macro keypad in C++
 
 To edit the keybinds for the Pimoroni RGB Keypad go to the Settings.cpp file.<br>
