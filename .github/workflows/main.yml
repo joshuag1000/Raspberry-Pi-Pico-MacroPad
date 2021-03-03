@@ -25,18 +25,23 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      # Cloned Pimorini's Librarys needed for the code
+      - name: Clone Pimoroni librarys
+        run: |
+          git clone https://github.com/pimoroni/pimoroni-pico.git ./ExternalLib/pimoroni-pico
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      # Preps the environment
+      - name: Prepare Enviroment
         run: |
           wget https://raw.githubusercontent.com/raspberrypi/pico-setup/master/pico_setup.sh
           export SKIP_VSCODE='1'
           export SKIP_UART='1'
           chmod +x ./pico_setup.sh
           ./pico_setup.sh
+          
+      # Builds the code
+      - name: Build Code
+        run: |  
           export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           mkdir build
           cd build
