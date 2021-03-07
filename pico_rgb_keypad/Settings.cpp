@@ -140,6 +140,9 @@ void IRRecieveCode(int IRCode)
     
 }
 
+extern bool has_consumer_key;
+extern bool has_key;
+
 // PressKey Allows a key to be easily pressed. This can be used with Media keys and normal keyboard keys.
 void PressKey(int Keycode, int ModifierKeys, bool MediaKey)
 {

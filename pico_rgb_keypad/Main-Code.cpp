@@ -131,9 +131,9 @@ void tud_resume_cb(void)
 }
 
 // use to avoid send multiple consecutive zero report for keyboard
-static bool has_key = false;
+bool has_key = false;
 // use to avoid send multiple consecutive zero report
-static bool has_consumer_key = false;
+bool has_consumer_key = false;
 
 // This will be used to initialise the IR sensor for when there is one.
 void InitIR()
