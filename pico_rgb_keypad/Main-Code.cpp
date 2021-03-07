@@ -11,21 +11,20 @@
 // include my settings file
 #include "Settings.h"
 
+// defining external settings so they can be used
+extern int DimLedDuration;
+extern bool TinyUsbBinkingTask;
+extern bool UseIR;
+
 // include the RGB keypad's config file.
 #include "pico_rgb_keypad.hpp"
 
 using namespace pimoroni;
 PicoRGBKeypad pico_keypad;
 
-// defining external settings so they can be used
-extern int DimLedDuration;
-extern bool TinyUsbBinkingTask;
-extern bool UseIR;
-
 // predeclaring
 void ButtonDown(int buttonValue);
 void IRRecieveCode(int RCode);
-//int PressKey(uint8_t keycode[6]);
 
 //--------------------------------------------------------------------+
 // CODE FOR USB TINY - Generic code for TinyUSB
@@ -139,25 +138,6 @@ void tud_resume_cb(void)
 static bool has_key = false;
 // use to avoid send multiple consecutive zero report
 static bool has_consumer_key = false;
-
-// PressKey Allows a key to be easily pressed. This can be used with Media keys and normal keyboard keys.
-void PressKey(int Keycode, int ModifierKeys, bool MediaKey)
-{
-    if (MediaKey == true)
-    {
-        uint16_t CodeToUse = Keycode;
-        tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &CodeToUse, 2);
-        tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &CodeToUse, 2);
-        has_consumer_key = true;
-    }
-    else
-    {
-        uint8_t CodeToUse[6] = {Keycode, 0, 0, 0, 0, 0};
-        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, ModifierKeys, CodeToUse);
-        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, ModifierKeys, CodeToUse);
-        has_key = true;
-    }
-}
 
 // This will be used to initialise the IR sensor for when there is one.
 void InitIR()

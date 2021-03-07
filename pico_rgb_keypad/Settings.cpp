@@ -1,14 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <string.h>
-
 // TINYUSB LIBRARIES
 #include "bsp/board.h"
 #include "tusb.h"
 #include "usb_descriptors.h"
 
-#include "Main-Code.h"
+// Predefines the press key function
+void PressKey(int Keycode, int ModifierKeys, bool MediaKey);
 
 // include the RGB keypad's config file.
 #include "pico_rgb_keypad.hpp"
@@ -142,4 +138,23 @@ void ButtonDown(int buttonValue)
 void IRRecieveCode(int IRCode)
 {
     
+}
+
+// PressKey Allows a key to be easily pressed. This can be used with Media keys and normal keyboard keys.
+void PressKey(int Keycode, int ModifierKeys, bool MediaKey)
+{
+    if (MediaKey == true)
+    {
+        uint16_t CodeToUse = Keycode;
+        tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &CodeToUse, 2);
+        tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &CodeToUse, 2);
+        has_consumer_key = true;
+    }
+    else
+    {
+        uint8_t CodeToUse[6] = {Keycode, 0, 0, 0, 0, 0};
+        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, ModifierKeys, CodeToUse);
+        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, ModifierKeys, CodeToUse);
+        has_key = true;
+    }
 }
