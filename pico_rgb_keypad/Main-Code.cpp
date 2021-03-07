@@ -17,16 +17,10 @@
 using namespace pimoroni;
 PicoRGBKeypad pico_keypad;
 
-// These are needed to provide a simple link that allows the settings file to change the keypads settings.
-void IlluminateKeypad(int LED, int R, int G, int B)
-{
-    pico_keypad.illuminate(LED, R, G, B);
-}
-
-void UpdateKeypad()
-{
-    pico_keypad.update();
-}
+// defining external settings so they can be used
+extern int DimLedDuration;
+extern bool TinyUsbBinkingTask;
+extern bool UseIR;
 
 // predeclaring
 void ButtonDown(int buttonValue);
@@ -86,17 +80,17 @@ int main()
     board_init();
     tusb_init();
     // Inits the IR (when there is code for that) if the IR option is enabled.
-    if (UseIR() == true)
+    if (UseIR == true)
     {
         InitIR();
     }
 
-    add_repeating_timer_ms(DimLedDuration(), DimLEDTimer, NULL, &timer);
+    add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
     LEDDimClock = true;
 
     while (true)
     {
-        if (TinyUsbBinkingTask() == true)
+        if (TinyUsbBinkingTask == true)
         {
             led_blinking_task();
         }
@@ -239,7 +233,7 @@ void KeyboardGo()
                     ButtonDown(ButtonLEDAddr);
 
                     // restart the timer that will dim the leds after 5 mins
-                    add_repeating_timer_ms(DimLedDuration(), DimLEDTimer, NULL, &timer);
+                    add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
                     LEDDimClock = true;
                 }
             }
@@ -254,7 +248,7 @@ void KeyboardGo()
 
             // TO ADD - IR CODE (fetch IR Code if there is one)
 
-            if (IRRecievedCode == true && UseIR() == true)
+            if (IRRecievedCode == true && UseIR == true)
             {
                 // if the ir sensor is enabled and the sensor recieves a code then call the sub in the settings file which will handle the ir code.
                 IRRecieveCode(IRCode);

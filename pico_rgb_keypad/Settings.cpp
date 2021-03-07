@@ -10,49 +10,45 @@
 
 #include "Main-Code.h"
 
-// Set this value to true if you are using an ir reciever with the keypad
-bool UseIR()
-{
-    return false;
-}
+// include the RGB keypad's config file.
+#include "pico_rgb_keypad.hpp"
 
-// Set this to true if you want the TinyUSB blinking task to run
-bool TinyUsbBinkingTask()
-{
-    return false;
-}
+using namespace pimoroni;
+extern PicoRGBKeypad pico_keypad;
 
 // Allows the user to set the duration before the LED's will dim again
-int DimLedDuration()
-{
-    return 300000;
-}
+int DimLedDuration = 300000;
+// Set this to true if you want the TinyUSB blinking task to run
+bool TinyUsbBinkingTask = false;
+// Set this value to true if you are using an ir reciever with the keypad
+bool UseIR = false;
+
 
 void DefaultColours()
 {
     // these are intentionally defined individually to allow the default colours of the button to be specified individually - White: 0x05, 0x05, 0x05
     // WARNING I RECOMMEND THAT YOU DO NOT SET THE COLOUR CODE HIGHER THAN 0x20 AS THE LEDS WILL GET VERY HOT.
-    IlluminateKeypad(0, 0x00, 0x00, 0x20);
-    IlluminateKeypad(1, 0x00, 0x20, 0x00);
-    IlluminateKeypad(2, 0x20, 0x05, 0x20);
-    IlluminateKeypad(3, 0x20, 0x00, 0x00);
+    pico_keypad.illuminate(0, 0x00, 0x00, 0x20);
+    pico_keypad.illuminate(1, 0x00, 0x20, 0x00);
+    pico_keypad.illuminate(2, 0x20, 0x05, 0x20);
+    pico_keypad.illuminate(3, 0x20, 0x00, 0x00);
 
-    IlluminateKeypad(4, 0x00, 0x00, 0x20);
-    IlluminateKeypad(5, 0x00, 0x20, 0x00);
-    IlluminateKeypad(6, 0x20, 0x00, 0x20);
-    IlluminateKeypad(7, 0x20, 0x00, 0x20);
+    pico_keypad.illuminate(4, 0x00, 0x00, 0x20);
+    pico_keypad.illuminate(5, 0x00, 0x20, 0x00);
+    pico_keypad.illuminate(6, 0x20, 0x00, 0x20);
+    pico_keypad.illuminate(7, 0x20, 0x00, 0x20);
 
-    IlluminateKeypad(8, 0x00, 0x00, 0x20);
-    IlluminateKeypad(9, 0x05, 0x05, 0x05);
-    IlluminateKeypad(10, 0x05, 0x05, 0x05);
-    IlluminateKeypad(11, 0x05, 0x05, 0x05);
+    pico_keypad.illuminate(8, 0x00, 0x00, 0x20);
+    pico_keypad.illuminate(9, 0x05, 0x05, 0x05);
+    pico_keypad.illuminate(10, 0x05, 0x05, 0x05);
+    pico_keypad.illuminate(11, 0x05, 0x05, 0x05);
 
-    IlluminateKeypad(12, 0x05, 0x05, 0x05);
-    IlluminateKeypad(13, 0x05, 0x05, 0x05);
-    IlluminateKeypad(14, 0x05, 0x05, 0x05);
-    IlluminateKeypad(15, 0x00, 0x20, 0x20);
+    pico_keypad.illuminate(12, 0x05, 0x05, 0x05);
+    pico_keypad.illuminate(13, 0x05, 0x05, 0x05);
+    pico_keypad.illuminate(14, 0x05, 0x05, 0x05);
+    pico_keypad.illuminate(15, 0x00, 0x20, 0x20);
 
-    UpdateKeypad();
+    pico_keypad.update();
 }
 
 // Notes for the PressKey Function.
