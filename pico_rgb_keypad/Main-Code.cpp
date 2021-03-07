@@ -22,10 +22,6 @@ extern bool UseIR;
 using namespace pimoroni;
 PicoRGBKeypad pico_keypad;
 
-// predeclaring
-void ButtonDown(int buttonValue);
-void IRRecieveCode(int RCode);
-
 //--------------------------------------------------------------------+
 // CODE FOR USB TINY - Generic code for TinyUSB
 //--------------------------------------------------------------------+
@@ -157,7 +153,7 @@ void KeyboardGo()
     start_ms += interval_ms;
     //uint32_t const btn = 1;
 
-    // Remote wakeup THIS WILL KEEP YOUR PC ON (I THINK) AND PREVENT IT FROM SLEEPING
+    // Remote wakeup
     if (tud_suspended())
     {
         // Wake up host if we are in suspend mode
