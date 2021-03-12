@@ -146,10 +146,10 @@ struct UpdateReturnStruct
     int Num;
 };
 
+/* Checks to see if a button is pressed. If it is it will return true and the button number. 
+This also handles the logic that changes the colours of the keys and all of the dimming functions. */
 UpdateReturnStruct UpdateButtons()
 {
-    /*------------- Checking sensors and pressing keys -------------*/
-    // read button states from i2c expander. Also handles any colours for the buttons and sets the KeypadButtonPressed to true
     uint16_t button_states = pico_keypad.get_button_states();
     bool ButtonPressed = false;
     int ButtonLEDAddr = 0;
@@ -214,6 +214,8 @@ UpdateReturnStruct UpdateButtons()
     return Results;
 }
 
+/* TODO add IR code.
+This is called to check if the IR sensor has recieved any codes. If it has it will return true and the IR Code. */
 UpdateReturnStruct UpdateIR()
 {
     // Check here to see if there has been a new IR code recieved.
