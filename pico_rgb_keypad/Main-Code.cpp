@@ -164,6 +164,7 @@ void KeyboardGo()
     /*------------- Keyboard -------------*/
 
     static bool toggle = false;
+    int ButtonLEDAddr = 0;
 
     // read button states from i2c expander. Then pass the values to the handler which will execute the button presses.
     uint16_t button_states = pico_keypad.get_button_states();
@@ -175,7 +176,6 @@ void KeyboardGo()
         {
             // convert the number into the 0 - 15 address for the led. Uses a binary shift to perform this calcualtion.
             unsigned int number = button_states;
-            int ButtonLEDAddr = 0;
             while (number >>= 1)
                 ++ButtonLEDAddr;
 
@@ -210,78 +210,45 @@ void KeyboardGo()
                     add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
                 }
             }
-
-            // call the function in the settings file to run the code that will press the key.
-            if (tud_hid_ready() && TudSuspendedCheck == false)
-            {
-                if (toggle = !toggle)
-                {
-                    KeypadButtonPressed = true;
-                    ButtonDown(ButtonLEDAddr);
-                }
-                else
-                {
-                    // send empty key report if previously has key pressed
-                    if (has_key)
-                        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
-                    uint16_t empty_key = 0;
-                    if (has_consumer_key)
-                        tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
-                    has_consumer_key = false;
-                    has_key = false;
-                }
-            }
-
-            // restart the timer that will dim the leds after 5 mins
-            add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
-            LEDDimClock = true;
+            KeypadButtonPressed = true;
         }
+
+        // restart the timer that will dim the leds after 5 mins
+        add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
+        LEDDimClock = true;
     }
     last_button_states = button_states;
 
-    //--------------------------------------------------------------------+
-    // Future addition - Add IR - THIS WILL CHANGE IN THE FUTURE.
-    //--------------------------------------------------------------------+
     int IRCode = 0;
     // Check here to see if there has been a new IR code recieved.
     bool IRRecievedCode = false;
 
     // TO ADD - IR CODE (fetch IR Code if there is one)
 
-    if (IRRecievedCode == true && UseIR == true && KeypadButtonPressed == false)
-    {
-        // if the ir sensor is enabled and the sensor recieves a code then call the sub in the settings file which will handle the ir code.
-        if (tud_hid_ready() && TudSuspendedCheck == false)
-        {
-            if (toggle = !toggle)
-            {
-                IRRecieveCode(IRCode);
-            }
-            else
-            {
-                // send empty key report if previously has key pressed
-                if (has_key)
-                    tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
-                uint16_t empty_key = 0;
-                if (has_consumer_key)
-                    tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
-                has_consumer_key = false;
-                has_key = false;
-            }
-        }
-    }
     // ----------------------
-    if (toggle == true)
+
+    // call the function in the settings file to run the code that will press the key.
+    if (tud_hid_ready() && TudSuspendedCheck == false)
     {
-        // send empty key report if previously has key pressed
-        if (has_key)
-            tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
-        uint16_t empty_key = 0;
-        if (has_consumer_key)
-            tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
-        has_consumer_key = false;
-        has_key = false;
-        toggle = false;
+        if (toggle = !toggle)
+        {
+            if (KeypadButtonPressed)
+                ButtonDown(ButtonLEDAddr);
+            
+            if (IRRecievedCode && UseIR)
+                IRRecieveCode(IRCode);
+        }
+        else
+        {
+            // send empty key report if previously has key pressed
+            if (has_key)
+                tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
+            uint16_t empty_key = 0;
+            if (has_consumer_key)
+                tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
+            has_consumer_key = false;
+            has_key = false;
+        }
     }
 }
 
