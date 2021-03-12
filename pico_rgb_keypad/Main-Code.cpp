@@ -167,6 +167,8 @@ void KeyboardGo()
     bool KeypadButtonPressed = false;
     int ButtonLEDAddr = 0;
 
+    bool IsTudReady = tud_hid_ready();
+
     if (last_button_states != button_states && button_states)
     {
         last_button_states = button_states;
@@ -192,14 +194,14 @@ void KeyboardGo()
             // make the colour of the button pressed go yellow temporarily. Or red if USB is not ready.
             if (ButtonLEDAddr <= 15)
             {
-                if (tud_hid_ready())
+                if (IsTudReady)
                 {
                     // Check if the system is ready and if it isn't show a red key
-                    pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x00, 0x00);
+                    pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
                 }
                 else
                 {
-                    pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
+                    pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x00, 0x00);
                 }
                 pico_keypad.update();
 
@@ -231,15 +233,21 @@ void KeyboardGo()
 
     // call the function in the settings file to run the code that will press the key.
     static bool toggle = false;
-    if (tud_hid_ready())
+    if (IsTudReady)
     {
         if (toggle = !toggle)
         {
             if (KeypadButtonPressed)
+            {
                 ButtonDown(ButtonLEDAddr);
+                KeypadButtonPressed = false;
+            }
 
-            if (IRRecievedCode && UseIR)
+            if (IRRecievedCode && UseIR) 
+            {
                 IRRecieveCode(IRCode);
+                IRRecievedCode = false;
+            }
         }
         else
         {
