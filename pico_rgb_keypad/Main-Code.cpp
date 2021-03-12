@@ -153,22 +153,20 @@ void KeyboardGo()
     //uint32_t const btn = 1;
 
     // Remote wakeup
-    bool TudSuspendedCheck = tud_suspended();
-    if (TudSuspendedCheck)
+    if (tud_suspended())
     {
         // Wake up host if we are in suspend mode
         // and REMOTE_WAKEUP feature is enabled by host
         tud_remote_wakeup();
     }
 
-    /*------------- Keyboard -------------*/
+    /*------------- Checking sensors and pressing keys -------------*/
 
-    static bool toggle = false;
-    int ButtonLEDAddr = 0;
-
-    // read button states from i2c expander. Then pass the values to the handler which will execute the button presses.
+    // read button states from i2c expander. Also handles any colours for the buttons and sets the KeypadButtonPressed to true
     uint16_t button_states = pico_keypad.get_button_states();
     bool KeypadButtonPressed = false;
+    int ButtonLEDAddr = 0;
+
     if (last_button_states != button_states && button_states)
     {
         last_button_states = button_states;
@@ -191,10 +189,10 @@ void KeyboardGo()
                 pico_keypad.update();
             }
 
-            // make the colour of the button pressed go yellow temporarily
+            // make the colour of the button pressed go yellow temporarily. Or red if USB is not ready.
             if (ButtonLEDAddr <= 15)
             {
-                if (TudSuspendedCheck)
+                if (tud_hid_ready())
                 {
                     // Check if the system is ready and if it isn't show a red key
                     pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x00, 0x00);
@@ -204,18 +202,22 @@ void KeyboardGo()
                     pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
                 }
                 pico_keypad.update();
+
+                // Start the timer to reset the colours after 300ms
                 if (TimerCancelled == true)
                 {
                     TimerCancelled = false;
                     add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
                 }
             }
-            KeypadButtonPressed = true;
-        }
 
-        // restart the timer that will dim the leds after 5 mins
-        add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
-        LEDDimClock = true;
+            // setting this value to true allows the code below to send the key press.
+            KeypadButtonPressed = true;
+
+            // restart the timer that will dim the leds after 5 mins
+            add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
+            LEDDimClock = true;
+        }
     }
     last_button_states = button_states;
 
@@ -228,13 +230,14 @@ void KeyboardGo()
     // ----------------------
 
     // call the function in the settings file to run the code that will press the key.
-    if (tud_hid_ready() && TudSuspendedCheck == false)
+    static bool toggle = false;
+    if (tud_hid_ready())
     {
         if (toggle = !toggle)
         {
             if (KeypadButtonPressed)
                 ButtonDown(ButtonLEDAddr);
-            
+
             if (IRRecievedCode && UseIR)
                 IRRecieveCode(IRCode);
         }
