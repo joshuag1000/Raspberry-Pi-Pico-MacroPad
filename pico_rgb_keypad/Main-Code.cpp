@@ -140,35 +140,21 @@ void InitIR()
 {
 }
 
-// This will toggle the inputted key on the keyboard.
-void KeyboardGo()
+struct UpdateReturnStruct
 {
-    // Init USB
-    // Poll every 10ms
-    const uint32_t interval_ms = 10;
-    static uint32_t start_ms = 0;
-    if (board_millis() - start_ms < interval_ms)
-        return; // not enough time
-    start_ms += interval_ms;
-    //uint32_t const btn = 1;
+    bool Check;
+    int Num;
+};
 
-    // Remote wakeup
-    if (tud_suspended())
-    {
-        // Wake up host if we are in suspend mode
-        // and REMOTE_WAKEUP feature is enabled by host
-        tud_remote_wakeup();
-    }
-
+UpdateReturnStruct UpdateButtons()
+{
     /*------------- Checking sensors and pressing keys -------------*/
-
+    
     // read button states from i2c expander. Also handles any colours for the buttons and sets the KeypadButtonPressed to true
     uint16_t button_states = pico_keypad.get_button_states();
-    bool KeypadButtonPressed = false;
+    bool ButtonPressed = false;
     int ButtonLEDAddr = 0;
-
-    bool IsTudReady = tud_hid_ready();
-
+    
     if (last_button_states != button_states && button_states)
     {
         last_button_states = button_states;
@@ -194,7 +180,7 @@ void KeyboardGo()
             // make the colour of the button pressed go yellow temporarily. Or red if USB is not ready.
             if (ButtonLEDAddr <= 15)
             {
-                if (IsTudReady)
+                if (tud_hid_ready())
                 {
                     // Check if the system is ready and if it isn't show a red key
                     pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
@@ -213,8 +199,8 @@ void KeyboardGo()
                 }
             }
 
-            // setting this value to true allows the code below to send the key press.
-            KeypadButtonPressed = true;
+            // set the button pressed check to true.
+            ButtonPressed = true;
 
             // restart the timer that will dim the leds after 5 mins
             add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
@@ -223,31 +209,56 @@ void KeyboardGo()
     }
     last_button_states = button_states;
 
-    int IRCode = 0;
+    UpdateReturnStruct Results = { ButtonPressed, ButtonLEDAddr };
+    return Results;
+}
+
+UpdateReturnStruct UpdateIR() 
+{
     // Check here to see if there has been a new IR code recieved.
     bool IRRecievedCode = false;
+    int IRCode = -1;
 
     // TO ADD - IR CODE (fetch IR Code if there is one)
 
     // ----------------------
+    UpdateReturnStruct Results = {IRRecievedCode, IRCode};
+    return Results;
+}
+
+// This will toggle the inputted key on the keyboard.
+void KeyboardGo()
+{
+    // Init USB
+    // Poll every 10ms
+    const uint32_t interval_ms = 10;
+    static uint32_t start_ms = 0;
+    if (board_millis() - start_ms < interval_ms)
+        return; // not enough time
+    start_ms += interval_ms;
+    //uint32_t const btn = 1;
+
+    // Remote wakeup
+    if (tud_suspended())
+    {
+        // Wake up host if we are in suspend mode
+        // and REMOTE_WAKEUP feature is enabled by host
+        tud_remote_wakeup();
+    }
+
+    UpdateReturnStruct CheckButtons = UpdateButtons();
+    UpdateReturnStruct CheckIR = UpdateIR();
 
     // call the function in the settings file to run the code that will press the key.
-    static bool toggle = false;
-    if (IsTudReady)
+    if (tud_hid_ready())
     {
-        if (toggle = !toggle)
+        if (CheckButtons.Check == true || CheckIR.Check == true)
         {
-            if (KeypadButtonPressed)
-            {
-                ButtonDown(ButtonLEDAddr);
-                KeypadButtonPressed = false;
-            }
+            if (CheckButtons.Check == true)
+                ButtonDown(CheckButtons.Num);
 
-            if (IRRecievedCode && UseIR) 
-            {
-                IRRecieveCode(IRCode);
-                IRRecievedCode = false;
-            }
+            if (CheckIR.Check == true && UseIR)
+                IRRecieveCode(CheckIR.Num);
         }
         else
         {

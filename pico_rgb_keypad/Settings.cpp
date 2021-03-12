@@ -128,6 +128,9 @@ void ButtonDown(int buttonValue)
         PressKey(HID_KEY_L, KEYBOARD_MODIFIER_LEFTGUI, false);
         break;
 
+    case -1:
+        break;
+        
     default:
         break;
     }
