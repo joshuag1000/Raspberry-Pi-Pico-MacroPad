@@ -154,7 +154,8 @@ void KeyboardGo()
     //uint32_t const btn = 1;
 
     // Remote wakeup
-    if (tud_suspended())
+    bool TudSuspendedCheck = tud_suspended();
+    if (TudSuspendedCheck)
     {
         // Wake up host if we are in suspend mode
         // and REMOTE_WAKEUP feature is enabled by host
@@ -162,87 +163,115 @@ void KeyboardGo()
     }
 
     /*------------- Keyboard -------------*/
-    if (tud_hid_ready())
+
+    // read button states from i2c expander. Then pass the values to the handler which will execute the button presses.
+    uint16_t button_states = pico_keypad.get_button_states();
+    bool KeypadButtonPressed = false;
+    if (last_button_states != button_states && button_states)
     {
-        static bool toggle = false;
-        if (toggle = !toggle)
+        last_button_states = button_states;
+        if (button_states)
         {
-            // read button states from i2c expander. Then pass the values to the handler which will execute the button presses.
-            uint16_t button_states = pico_keypad.get_button_states();
+            // convert the number into the 0 - 15 address for the led. Uses a binary shift to perform this calcualtion.
+            unsigned int number = button_states;
+            int ButtonLEDAddr = 0;
+            while (number >>= 1)
+                ++ButtonLEDAddr;
 
-            if (last_button_states != button_states && button_states)
+            // if the timer that dims the leds after 5 mins is running cancel it. if it isn't then reset the led brightness
+            if (LEDDimClock == true)
             {
-                last_button_states = button_states;
-                if (button_states)
+                cancel_repeating_timer(&timer);
+                LEDDimClock = false;
+            }
+            else
+            {
+                pico_keypad.set_brightness(1.0f);
+                pico_keypad.update();
+            }
+
+            // make the colour of the button pressed go yellow temporarily
+            if (ButtonLEDAddr <= 15)
+            {
+                if (TudSuspendedCheck)
                 {
-                    // convert the number into the 0 - 15 address for the led. Uses a binary shift to perform this calcualtion.
-                    unsigned int number = button_states;
-                    int ButtonLEDAddr = 0;
-                    while (number >>= 1)
-                        ++ButtonLEDAddr;
-
-                    // if the timer that dims the leds after 5 mins is running cancel it. if it isn't then reset the led brightness
-                    if (LEDDimClock == true)
-                    {
-                        cancel_repeating_timer(&timer);
-                        LEDDimClock = false;
-                    }
-                    else
-                    {
-                        pico_keypad.set_brightness(1.0f);
-                        pico_keypad.update();
-                    }
-
-                    // make the colour of the button pressed go yellow temporarily
-                    if (ButtonLEDAddr <= 15)
-                    {
-                        pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
-                        pico_keypad.update();
-                        if (TimerCancelled == true)
-                        {
-                            TimerCancelled = false;
-                            add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
-                        }
-                    }
-
-                    // call the function in the settings file to run the code that will press the key.
-                    ButtonDown(ButtonLEDAddr);
-
-                    // restart the timer that will dim the leds after 5 mins
-                    add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
-                    LEDDimClock = true;
+                    // Check if the system is ready and if it isn't show a red key
+                    pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x00, 0x00);
+                }
+                else
+                {
+                    pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
+                }
+                pico_keypad.update();
+                if (TimerCancelled == true)
+                {
+                    TimerCancelled = false;
+                    add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
                 }
             }
-            last_button_states = button_states;
 
-            //--------------------------------------------------------------------+
-            // Future addition - Add IR - THIS WILL CHANGE IN THE FUTURE.
-            //--------------------------------------------------------------------+
-            int IRCode = 0;
-            // Check here to see if there has been a new IR code recieved.
-            bool IRRecievedCode = false;
-
-            // TO ADD - IR CODE (fetch IR Code if there is one)
-
-            if (IRRecievedCode == true && UseIR == true)
+            // call the function in the settings file to run the code that will press the key.
+            if (tud_hid_ready() && TudSuspendedCheck == false)
             {
-                // if the ir sensor is enabled and the sensor recieves a code then call the sub in the settings file which will handle the ir code.
-                IRRecieveCode(IRCode);
+                static bool toggle = false;
+                if (toggle = !toggle)
+                {
+                    KeypadButtonPressed = true;
+                    ButtonDown(ButtonLEDAddr);
+                }
+                else
+                {
+                    // send empty key report if previously has key pressed
+                    if (has_key)
+                        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
+                    uint16_t empty_key = 0;
+                    if (has_consumer_key)
+                        tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
+                    has_consumer_key = false;
+                    has_key = false;
+                }
             }
-            // ----------------------
-        }
-        else
-        {
-            // send empty key report if previously has key pressed
-            if (has_key)
-                tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
-            uint16_t empty_key = 0;
-            if (has_consumer_key)
-                tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
-            has_consumer_key = false;
-            has_key = false;
+
+            // restart the timer that will dim the leds after 5 mins
+            add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
+            LEDDimClock = true;
         }
     }
+    last_button_states = button_states;
+
+    //--------------------------------------------------------------------+
+    // Future addition - Add IR - THIS WILL CHANGE IN THE FUTURE.
+    //--------------------------------------------------------------------+
+    int IRCode = 0;
+    // Check here to see if there has been a new IR code recieved.
+    bool IRRecievedCode = false;
+
+    // TO ADD - IR CODE (fetch IR Code if there is one)
+
+    if (IRRecievedCode == true && UseIR == true && KeypadButtonPressed == false)
+    {
+        // if the ir sensor is enabled and the sensor recieves a code then call the sub in the settings file which will handle the ir code.
+        if (tud_hid_ready() && TudSuspendedCheck == false)
+        {
+            static bool toggle = false;
+            if (toggle = !toggle)
+            {
+                IRRecieveCode(IRCode);
+            }
+            else
+            {
+                // send empty key report if previously has key pressed
+                if (has_key)
+                    tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
+                uint16_t empty_key = 0;
+                if (has_consumer_key)
+                    tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
+                has_consumer_key = false;
+                has_key = false;
+            }
+        }
+    }
+    // ----------------------
 }
 
 // Invoked when received GET_REPORT control request
