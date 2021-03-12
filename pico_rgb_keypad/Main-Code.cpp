@@ -149,12 +149,11 @@ struct UpdateReturnStruct
 UpdateReturnStruct UpdateButtons()
 {
     /*------------- Checking sensors and pressing keys -------------*/
-    
     // read button states from i2c expander. Also handles any colours for the buttons and sets the KeypadButtonPressed to true
     uint16_t button_states = pico_keypad.get_button_states();
     bool ButtonPressed = false;
     int ButtonLEDAddr = 0;
-    
+
     if (last_button_states != button_states && button_states)
     {
         last_button_states = button_states;
@@ -187,7 +186,9 @@ UpdateReturnStruct UpdateButtons()
                 }
                 else
                 {
-                    pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x00, 0x00);
+                    for (int i = 0; i <= 15; i++) {
+                        pico_keypad.illuminate(i, 0x20, 0x00, 0x00);
+                    }
                 }
                 pico_keypad.update();
 
@@ -209,11 +210,11 @@ UpdateReturnStruct UpdateButtons()
     }
     last_button_states = button_states;
 
-    UpdateReturnStruct Results = { ButtonPressed, ButtonLEDAddr };
+    UpdateReturnStruct Results = {ButtonPressed, ButtonLEDAddr};
     return Results;
 }
 
-UpdateReturnStruct UpdateIR() 
+UpdateReturnStruct UpdateIR()
 {
     // Check here to see if there has been a new IR code recieved.
     bool IRRecievedCode = false;
@@ -265,11 +266,11 @@ void KeyboardGo()
             // send empty key report if previously has key pressed
             if (has_key)
                 tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
+            has_key = false;
             uint16_t empty_key = 0;
             if (has_consumer_key)
                 tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
             has_consumer_key = false;
-            has_key = false;
         }
     }
 }
