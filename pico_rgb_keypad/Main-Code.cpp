@@ -138,7 +138,6 @@ bool has_consumer_key = false;
 // This will be used to initialise the IR sensor for when there is one.
 void InitIR()
 {
-    
 }
 
 // This will toggle the inputted key on the keyboard.
@@ -163,6 +162,8 @@ void KeyboardGo()
     }
 
     /*------------- Keyboard -------------*/
+
+    static bool toggle = false;
 
     // read button states from i2c expander. Then pass the values to the handler which will execute the button presses.
     uint16_t button_states = pico_keypad.get_button_states();
@@ -213,7 +214,6 @@ void KeyboardGo()
             // call the function in the settings file to run the code that will press the key.
             if (tud_hid_ready() && TudSuspendedCheck == false)
             {
-                static bool toggle = false;
                 if (toggle = !toggle)
                 {
                     KeypadButtonPressed = true;
@@ -253,7 +253,6 @@ void KeyboardGo()
         // if the ir sensor is enabled and the sensor recieves a code then call the sub in the settings file which will handle the ir code.
         if (tud_hid_ready() && TudSuspendedCheck == false)
         {
-            static bool toggle = false;
             if (toggle = !toggle)
             {
                 IRRecieveCode(IRCode);
@@ -272,6 +271,18 @@ void KeyboardGo()
         }
     }
     // ----------------------
+    if (toggle == true)
+    {
+        // send empty key report if previously has key pressed
+        if (has_key)
+            tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
+        uint16_t empty_key = 0;
+        if (has_consumer_key)
+            tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
+        has_consumer_key = false;
+        has_key = false;
+        toggle = false;
+    }
 }
 
 // Invoked when received GET_REPORT control request
