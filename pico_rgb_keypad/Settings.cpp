@@ -19,7 +19,6 @@ bool TinyUsbBinkingTask = false;
 // Set this value to true if you are using an ir reciever with the keypad
 bool UseIR = false;
 
-
 void DefaultColours()
 {
     // these are intentionally defined individually to allow the default colours of the button to be specified individually - White: 0x05, 0x05, 0x05
@@ -103,7 +102,7 @@ void ButtonDown(int buttonValue)
     case 9:
 
         break;
-        
+
     case 10:
 
         break;
