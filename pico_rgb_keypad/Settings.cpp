@@ -2,6 +2,7 @@
 #include "bsp/board.h"
 #include "tusb.h"
 #include "usb_descriptors.h"
+#include "pico/bootrom.h"
 
 // Predefines the press key function
 void PressKey(int Keycode, int ModifierKeys, bool MediaKey);
@@ -34,13 +35,13 @@ void DefaultColours()
     pico_keypad.illuminate(7, 0x20, 0x00, 0x20);
 
     pico_keypad.illuminate(8, 0x00, 0x00, 0x20);
-    pico_keypad.illuminate(9, 0x05, 0x05, 0x05);
-    pico_keypad.illuminate(10, 0x05, 0x05, 0x05);
-    pico_keypad.illuminate(11, 0x05, 0x05, 0x05);
+    pico_keypad.illuminate(9, 0x00, 0x00, 0x00);
+    pico_keypad.illuminate(10, 0x00, 0x00, 0x00);
+    pico_keypad.illuminate(11, 0x20, 0x00, 0x00);
 
-    pico_keypad.illuminate(12, 0x05, 0x05, 0x05);
-    pico_keypad.illuminate(13, 0x05, 0x05, 0x05);
-    pico_keypad.illuminate(14, 0x05, 0x05, 0x05);
+    //pico_keypad.illuminate(12, 0x05, 0x05, 0x05);
+    //pico_keypad.illuminate(13, 0x05, 0x05, 0x05);
+    //pico_keypad.illuminate(14, 0x05, 0x05, 0x05);
     pico_keypad.illuminate(15, 0x00, 0x20, 0x20);
 
     pico_keypad.update();
@@ -108,19 +109,24 @@ void ButtonDown(int buttonValue)
         break;
 
     case 11:
-
+        for (uint8_t i = 0; i < PicoRGBKeypad::NUM_PADS; i++)
+        {
+            pico_keypad.illuminate(i, 0x00, 0x00, 0x00);
+        }
+        pico_keypad.update();
+        reset_usb_boot(0, 0);
         break;
 
     case 12:
-
+        PressKey(HID_KEY_CAPS_LOCK, 0, false);
         break;
 
     case 13:
-
+        PressKey(HID_KEY_NUM_LOCK, 0, false);
         break;
 
     case 14:
-
+        PressKey(HID_KEY_SCROLL_LOCK, 0, false);
         break;
 
     case 15:
@@ -130,7 +136,7 @@ void ButtonDown(int buttonValue)
 
     case -1:
         break;
-        
+
     default:
         break;
     }
@@ -139,7 +145,6 @@ void ButtonDown(int buttonValue)
 // This can be ignored if the IR sensor is disabled. DO NOT DELETE AS IT WILL BREAK THE CODE.
 void IRRecieveCode(int IRCode)
 {
-    
 }
 
 extern bool has_consumer_key;

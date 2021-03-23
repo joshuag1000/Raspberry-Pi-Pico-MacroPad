@@ -154,6 +154,33 @@ UpdateReturnStruct UpdateButtons()
     bool ButtonPressed = false;
     int ButtonLEDAddr = 0;
 
+    // Getting the status of the caps lock key, Num lock key and the Scroll lock key. DOES NOT WORK ATM.
+    if (KEYBOARD_LED_CAPSLOCK)
+    {
+        pico_keypad.illuminate(12, 0x20, 0x20, 0x00);
+    }
+    else
+    {
+        pico_keypad.illuminate(12, 0x05, 0x05, 0x05);
+    }
+    if (KEYBOARD_LED_NUMLOCK)
+    {
+        pico_keypad.illuminate(13, 0x20, 0x20, 0x00);
+    }
+    else
+    {
+        pico_keypad.illuminate(13, 0x05, 0x05, 0x05);
+    }
+    if (KEYBOARD_LED_SCROLLLOCK)
+    {
+        pico_keypad.illuminate(14, 0x20, 0x20, 0x00);
+    }
+    else
+    {
+        pico_keypad.illuminate(14, 0x05, 0x05, 0x05);
+    }
+    pico_keypad.update();
+
     if (last_button_states != button_states && button_states)
     {
         last_button_states = button_states;
@@ -186,7 +213,8 @@ UpdateReturnStruct UpdateButtons()
                 }
                 else
                 {
-                    for (int i = 0; i <= 15; i++) {
+                    for (int i = 0; i <= 15; i++)
+                    {
                         pico_keypad.illuminate(i, 0x20, 0x00, 0x00);
                     }
                 }
