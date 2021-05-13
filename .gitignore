@@ -35,7 +35,7 @@ cmake-*
 *.out
 *.app
 
-**/build
+**/build*
 **/old
 .vscode
 *.7z
