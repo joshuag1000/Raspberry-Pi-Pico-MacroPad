@@ -35,8 +35,8 @@ void DefaultColours()
     pico_keypad.illuminate(7, 0x20, 0x00, 0x20);
 
     pico_keypad.illuminate(8, 0x00, 0x00, 0x20);
-    pico_keypad.illuminate(9, 0x00, 0x00, 0x00);
-    pico_keypad.illuminate(10, 0x00, 0x00, 0x00);
+    pico_keypad.illuminate(9, 0x00, 0x20, 0x20);
+    pico_keypad.illuminate(10, 0x00, 0x00, 0x20);
     pico_keypad.illuminate(11, 0x20, 0x00, 0x00);
 
     //pico_keypad.illuminate(12, 0x05, 0x05, 0x05);
@@ -101,11 +101,13 @@ void ButtonDown(int buttonValue)
         break;
 
     case 9:
-
+        // Windows + Shift + Control + Alt + A.
+        PressKey(HID_KEY_A, KEYBOARD_MODIFIER_LEFTGUI + KEYBOARD_MODIFIER_LEFTCTRL + KEYBOARD_MODIFIER_LEFTSHIFT + KEYBOARD_MODIFIER_LEFTALT, false);
         break;
 
     case 10:
-
+        // Windows + Shift + Control + Alt + A.
+        PressKey(HID_KEY_D, KEYBOARD_MODIFIER_LEFTGUI + KEYBOARD_MODIFIER_LEFTCTRL + KEYBOARD_MODIFIER_LEFTSHIFT + KEYBOARD_MODIFIER_LEFTALT, false);
         break;
 
     case 11:
