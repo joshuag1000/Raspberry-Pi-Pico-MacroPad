@@ -38,6 +38,8 @@ jobs:
           export SKIP_UART='1'
           chmod +x ./pico_setup.sh
           ./pico_setup.sh
+          rm -rf /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/lib/tinyusb
+          git clone https://github.com/hathach/tinyusb.git --branch 11c23f88bf42f64ce14b8a7b0b2a4e207dc4dd12
           
       # Builds the code
       - name: Build Code
