@@ -12,7 +12,7 @@ The Code cannot be published pre-compiled because all of the keybinds are set in
 There are some bugs in the code. They will be worked out when i have time
 
 ## To Do:
-
+ - Fix Strange button behavour.
 
 # Links
 https://thepihut.com/products/raspberry-pi-pico <br>

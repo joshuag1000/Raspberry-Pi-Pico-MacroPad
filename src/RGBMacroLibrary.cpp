@@ -89,7 +89,12 @@ void tud_resume_cb(void)
 // USB HID
 //--------------------------------------------------------------------+
 
-static void send_hid_report(uint8_t report_id, bool ButtonPressed, int KeyCode, int Modifiers)
+// use to avoid send multiple consecutive zero report for keyboard
+bool has_keyboard_key = false;
+// use to avoid send multiple consecutive zero report
+bool has_consumer_key = false;
+
+void SendKeypress(uint8_t report_id, bool ButtonPressed, int KeyCode, int Modifiers)
 {
   // skip if hid is not ready yet
   if ( !tud_hid_ready() ) return;
@@ -98,13 +103,9 @@ static void send_hid_report(uint8_t report_id, bool ButtonPressed, int KeyCode, 
   {
     case REPORT_ID_KEYBOARD:
     {
-      // use to avoid send multiple consecutive zero report for keyboard
-      static bool has_keyboard_key = false;
-
       if ( ButtonPressed )
       {
         uint8_t keycode[6] = {KeyCode, 0, 0, 0, 0, 0};
-
         tud_hid_keyboard_report(REPORT_ID_KEYBOARD, Modifiers, keycode);
         has_keyboard_key = true;
       }else
@@ -118,9 +119,6 @@ static void send_hid_report(uint8_t report_id, bool ButtonPressed, int KeyCode, 
 
     case REPORT_ID_CONSUMER_CONTROL:
     {
-      // use to avoid send multiple consecutive zero report
-      static bool has_consumer_key = false;
-
       if ( ButtonPressed )
       {
         // volume down
@@ -146,19 +144,7 @@ static void send_hid_report(uint8_t report_id, bool ButtonPressed, int KeyCode, 
 // Note: For composite reports, report[0] is report ID
 void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint8_t len)
 {
-  (void) instance;
-  (void) len;
-
-  uint8_t next_report_id = report[0] + 1;
-
-  if (next_report_id < REPORT_ID_COUNT)
-  {
-    if (button_states > 0) {
-        send_hid_report(next_report_id, true, 0, 0);
-    } else {
-        send_hid_report(next_report_id, false, 0, 0);
-    }
-  }
+  // we do not use this but im leaving it in to avoid issues
 }
 
 // Invoked when received GET_REPORT control request
@@ -194,14 +180,21 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 
       if (kbd_leds & KEYBOARD_LED_CAPSLOCK)
       {
-        // Capslock On: disable blink, turn led on
-        blink_interval_ms = 0;
-        board_led_write(true);
-      }else
+        // Caps lock is on if the user has a caps lock button light the Button light
+
+      }else if (kbd_leds & !KEYBOARD_LED_CAPSLOCK)
       {
-        // Caplocks Off: back to normal blink
-        board_led_write(false);
-        blink_interval_ms = BLINK_MOUNTED;
+        // Caps Lock is not on
+      }
+      if (kbd_leds & KEYBOARD_LED_NUMLOCK) {
+        // Numlock is on
+      } else if (kbd_leds & !KEYBOARD_LED_NUMLOCK) {
+        // Numlock is off
+      }
+      if (kbd_leds & KEYBOARD_LED_SCROLLLOCK) {
+        // Scroll lock is on
+      } else if (!KEYBOARD_LED_SCROLLLOCK) {
+        // Scroll lock is off
       }
     }
   }
@@ -285,70 +278,92 @@ This will be added into the loop for void main this function will handle the det
 Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 tud_hid_report_complete_cb() is used to send the next report after previous one is complete
 */
-void MacropadLoop(void) {
-    tud_task(); // tinyusb device task
-    led_blinking_task();
-    // Poll every 10ms
-    const uint32_t interval_ms = 10;
-    static uint32_t start_ms = 0;
+void MacropadLoop(void)
+{
+  tud_task(); // tinyusb device task
+  led_blinking_task();
+  // Poll every 10ms
+  const uint32_t interval_ms = 10;
+  static uint32_t start_ms = 0;
 
-    if ( board_millis() - start_ms < interval_ms) return; // not enough time
-    start_ms += interval_ms;
+  if (board_millis() - start_ms < interval_ms)
+    return; // not enough time
+  start_ms += interval_ms;
 
-    button_states = PicoKeypad.get_button_states();
-
-    // Remote wakeup
-    if ( tud_suspended() && (button_states > 0) )
+  // Remote wakeup
+  if (tud_suspended())
+  {
+    // Wake up host if we are in suspend mode
+    // and REMOTE_WAKEUP feature is enabled by host
+    tud_remote_wakeup();
+  }
+  else
+  {
+    if (tud_hid_ready())
     {
-        // Wake up host if we are in suspend mode
-        // and REMOTE_WAKEUP feature is enabled by host
-        tud_remote_wakeup();
-    }else
-    {
-        // Check to see if a button was pressed and that it was not the same as the last check. Allows us to avoid duplicate registers.
-        if (last_button_states != button_states && button_states)
-        {
-            last_button_states = button_states;
-            if (button_states)
-            { 
-                uint8_t ButtonLEDAddr = 0;
-                // convert the number into the 0 - 15 address for the led. Uses a binary shift to perform this calcualtion.
-                unsigned int number = button_states;
-                while (number >>= 1)
-                    ++ButtonLEDAddr;
-
-                // If the user has specified our custom keyboard then we need to make sure that we handle it.
-                if (ButtonAssignments[ButtonLEDAddr][2] == REPORT_ID_TINYPICO) { 
-                    for (uint8_t i = 0; i < 16; i++)
-                    {
-                        PicoKeypad.illuminate(i, 0x00, 0x00, 0x00);
-                    }
-                    PicoKeypad.update();
-                    reset_usb_boot(0, 0);
-                // Check to see if the keypad is actually ready for a keypress
-                }else if (tud_hid_ready())
-                {
-                    // Check if the system is ready and if it isn't show a red key
-                    PicoKeypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
-                    send_hid_report(ButtonAssignments[ButtonLEDAddr][2], true, ButtonAssignments[ButtonLEDAddr][0], ButtonAssignments[ButtonLEDAddr][1]);
-                }
-                else
-                {
-                    for (int i = 0; i <= 15; i++)
-                    {
-                        PicoKeypad.illuminate(i, 0x20, 0x00, 0x00);
-                    }
-                }
-                PicoKeypad.update();
-
-                // Start the timer to reset the colours after 300ms.
-                if (TimerCancelled == true)
-                {
-                    TimerCancelled = false;
-                    add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
-                }
-            }
-        }
+      // send empty key report if previously has key pressed
+      if (has_keyboard_key)
+      {
+        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
+        has_keyboard_key = false;
+        return;
+      }
+      // send empty key report (release key) if previously has key pressed
+      uint16_t empty_key = 0;
+      if (has_consumer_key)
+      {
+        tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
+        has_consumer_key = false;
+        return;
+      }
     }
 
+    button_states = PicoKeypad.get_button_states();
+    // Check to see if a button was pressed and that it was not the same as the last check. Allows us to avoid duplicate registers.
+    if (last_button_states != button_states && button_states)
+    {
+      last_button_states = button_states;
+      if (button_states)
+      {
+        uint8_t ButtonLEDAddr = 0;
+        // convert the number into the 0 - 15 address for the led. Uses a binary shift to perform this calcualtion.
+        unsigned int number = button_states;
+        while (number >>= 1)
+          ++ButtonLEDAddr;
+
+        // If the user has specified our custom keyboard then we need to make sure that we handle it.
+        if (ButtonAssignments[ButtonLEDAddr][2] == REPORT_ID_TINYPICO)
+        {
+          for (uint8_t i = 0; i < 16; i++)
+          {
+            PicoKeypad.illuminate(i, 0x00, 0x00, 0x00);
+          }
+          PicoKeypad.update();
+          reset_usb_boot(0, 0);
+          // Check to see if the keypad is actually ready for a keypress
+        }
+        else if (tud_hid_ready())
+        {
+          // Check if the system is ready and if it isn't show a red key
+          PicoKeypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
+          SendKeypress(ButtonAssignments[ButtonLEDAddr][2], true, ButtonAssignments[ButtonLEDAddr][0], ButtonAssignments[ButtonLEDAddr][1]);
+        }
+        else
+        {
+          for (int i = 0; i <= 15; i++)
+          {
+            PicoKeypad.illuminate(i, 0x20, 0x00, 0x00);
+          }
+        }
+        PicoKeypad.update();
+
+        // Start the timer to reset the colours after 300ms.
+        if (TimerCancelled == true)
+        {
+          TimerCancelled = false;
+          add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
+        }
+      }
+    }
+  }
 }
