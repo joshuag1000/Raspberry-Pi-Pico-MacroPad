@@ -43,7 +43,7 @@ int main() {
     while (true)
     {
         // Run the libraries loop to handle keypresses.
-        MacropadLoop();
+        MacropadLoop(false, 300000);
     }
     
     return 0;

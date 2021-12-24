@@ -32,6 +32,9 @@ uint8_t ColourAssignments[16][3] = { 0 };
 
 uint16_t button_states = 0;
 uint16_t last_button_states = 0;
+#define MaxBrightness 1.0f
+#define MinBrightness 0.2f
+
 
 
 // This is all of the tiny usb code with a few modifications pulled from the example at: https://github.com/hathach/tinyusb/blob/master/examples/device/hid_composite/src/main.c
@@ -254,7 +257,7 @@ void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, int KeyCode
 void InitializeDevice(void) {
     // init the keypad
     PicoKeypad.init();
-    PicoKeypad.set_brightness(1.0f);
+    PicoKeypad.set_brightness(MaxBrightness);
     board_init();
     tusb_init();
 }
@@ -273,15 +276,29 @@ int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
     return 0;
 }
 
+// simple timer that will DIM the led's when called. The timer is started below.
+struct repeating_timer timer;
+bool LEDDimClock = false;
+bool DimLEDTimer(struct repeating_timer *t)
+{
+    PicoKeypad.set_brightness(MinBrightness);
+    PicoKeypad.update();
+    LEDDimClock = false;
+    cancel_repeating_timer(&timer);
+    return true;
+}
+
 /* 
 This will be added into the loop for void main this function will handle the detection of the button presses and handles the keypress too.
 Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 tud_hid_report_complete_cb() is used to send the next report after previous one is complete
 */
-void MacropadLoop(void)
+void MacropadLoop(bool UseBlinking, int DimLedDuration)
 {
   tud_task(); // tinyusb device task
-  led_blinking_task();
+  if (UseBlinking){
+    led_blinking_task();
+  }
   // Poll every 10ms
   const uint32_t interval_ms = 10;
   static uint32_t start_ms = 0;
@@ -330,6 +347,22 @@ void MacropadLoop(void)
         unsigned int number = button_states;
         while (number >>= 1)
           ++ButtonLEDAddr;
+
+        // Cancel the timer if it is still running.
+        // if the timer that dims the leds after 5 mins is running cancel it. if it isn't then reset the led brightness
+        if (LEDDimClock == true)
+        {
+          cancel_repeating_timer(&timer);
+          LEDDimClock = false;
+        }
+        else
+        {
+          PicoKeypad.set_brightness(MaxBrightness);
+          PicoKeypad.update();
+        }
+        // restart the timer that will dim the leds after 5 mins
+        add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
+        LEDDimClock = true;
 
         // If the user has specified our custom keyboard then we need to make sure that we handle it.
         if (ButtonAssignments[ButtonLEDAddr][2] == REPORT_ID_TINYPICO)
