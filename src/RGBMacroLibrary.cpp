@@ -18,6 +18,8 @@
 // Declarations
 //--------------------------------------------------------------------+
 
+// This will be used to reference our keypad in our code.
+pimoroni::PicoRGBKeypad PicoKeypad;
 
 enum
 {
@@ -165,6 +167,8 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
   return 0;
 }
 
+uint8_t LockKeysOrigionalColours[3][4] = { 0 };
+
 // Invoked when received SET_REPORT control request or
 // received data on OUT endpoint ( Report ID = 0, Type = 0 )
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
@@ -180,25 +184,56 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
       if ( bufsize < 1 ) return;
 
       uint8_t const kbd_leds = buffer[0];
-
+      // Handle Caps Lock 
       if (kbd_leds & KEYBOARD_LED_CAPSLOCK)
       {
+        if (LockKeysOrigionalColours[0][3] == 0) return;
         // Caps lock is on if the user has a caps lock button light the Button light
-
-      }else if (kbd_leds & !KEYBOARD_LED_CAPSLOCK)
+        ColourAssignments[LockKeysOrigionalColours[0][3]][0] = 0x20;
+        ColourAssignments[LockKeysOrigionalColours[0][3]][1] = 0x20;
+        ColourAssignments[LockKeysOrigionalColours[0][3]][2] = 0x20;
+      }else
       {
+        if (LockKeysOrigionalColours[0][3] == 0) return;
         // Caps Lock is not on
+        ColourAssignments[LockKeysOrigionalColours[0][3]][0] = LockKeysOrigionalColours[0][0];
+        ColourAssignments[LockKeysOrigionalColours[0][3]][1] = LockKeysOrigionalColours[0][1];
+        ColourAssignments[LockKeysOrigionalColours[0][3]][2] = LockKeysOrigionalColours[0][2];
       }
+      // Handle Num Lock 
       if (kbd_leds & KEYBOARD_LED_NUMLOCK) {
+        if (LockKeysOrigionalColours[1][3] == 0) return;
         // Numlock is on
-      } else if (kbd_leds & !KEYBOARD_LED_NUMLOCK) {
+        ColourAssignments[LockKeysOrigionalColours[1][3]][0] = 0x20;
+        ColourAssignments[LockKeysOrigionalColours[1][3]][1] = 0x20;
+        ColourAssignments[LockKeysOrigionalColours[1][3]][2] = 0x20;
+      } else {
+        if (LockKeysOrigionalColours[1][3] == 0) return;
         // Numlock is off
+        ColourAssignments[LockKeysOrigionalColours[1][3]][0] = LockKeysOrigionalColours[1][0];
+        ColourAssignments[LockKeysOrigionalColours[1][3]][1] = LockKeysOrigionalColours[1][1];
+        ColourAssignments[LockKeysOrigionalColours[1][3]][2] = LockKeysOrigionalColours[1][2];
       }
-      if (kbd_leds & KEYBOARD_LED_SCROLLLOCK) {
-        // Scroll lock is on
-      } else if (!KEYBOARD_LED_SCROLLLOCK) {
-        // Scroll lock is off
-      }
+      // Handle Scroll Lock 
+      // if (kbd_leds & KEYBOARD_LED_SCROLLLOCK) {
+      //   if (LockKeysOrigionalColours[2][3] == 0) return;
+      //   // Scroll lock is on
+      //   ColourAssignments[LockKeysOrigionalColours[2][3]][0] = 0x20;
+      //   ColourAssignments[LockKeysOrigionalColours[2][3]][1] = 0x20;
+      //   ColourAssignments[LockKeysOrigionalColours[2][3]][2] = 0x20;
+      // } else {
+      //   if (LockKeysOrigionalColours[2][3] == 0) return;
+      //   // Scroll lock is off
+      //   ColourAssignments[LockKeysOrigionalColours[2][3]][0] = LockKeysOrigionalColours[2][0];
+      //   ColourAssignments[LockKeysOrigionalColours[2][3]][1] = LockKeysOrigionalColours[2][1];
+      //   ColourAssignments[LockKeysOrigionalColours[2][3]][2] = LockKeysOrigionalColours[2][2];
+      // }
+
+      // Set the key colours
+      PicoKeypad.illuminate(LockKeysOrigionalColours[0][3], ColourAssignments[LockKeysOrigionalColours[0][3]][0], ColourAssignments[LockKeysOrigionalColours[0][3]][1], ColourAssignments[LockKeysOrigionalColours[0][3]][2]);
+      PicoKeypad.illuminate(LockKeysOrigionalColours[1][3], ColourAssignments[LockKeysOrigionalColours[1][3]][0], ColourAssignments[LockKeysOrigionalColours[1][3]][1], ColourAssignments[LockKeysOrigionalColours[1][3]][2]);
+      //PicoKeypad.illuminate(LockKeysOrigionalColours[2][3], ColourAssignments[LockKeysOrigionalColours[2][3]][0], ColourAssignments[LockKeysOrigionalColours[2][3]][1], ColourAssignments[LockKeysOrigionalColours[2][3]][2]);
+      PicoKeypad.update();
     }
   }
 }
@@ -226,30 +261,61 @@ void led_blinking_task(void)
 // Library Code
 //--------------------------------------------------------------------+
 
-// This will be used to reference our keypad in our code.
-pimoroni::PicoRGBKeypad PicoKeypad;
-
 void RemoveButtonSetup(int ButtonNum) {
-    ColourAssignments[ButtonNum][0] = 0;
-    ColourAssignments[ButtonNum][1] = 0;
-    ColourAssignments[ButtonNum][2] = 0;
-    PicoKeypad.illuminate(ButtonNum, 0, 0, 0);
-    PicoKeypad.update();
-    ButtonAssignments[ButtonNum][0] = 0;
-    ButtonAssignments[ButtonNum][1] = 0;
-    ButtonAssignments[ButtonNum][2] = 0;
+  // if the key is a lock key clear it
+  if (ButtonAssignments[ButtonNum][0] == HID_KEY_CAPS_LOCK) {
+    LockKeysOrigionalColours[0][0] = 0;
+    LockKeysOrigionalColours[0][1] = 0;
+    LockKeysOrigionalColours[0][2] = 0;
+    LockKeysOrigionalColours[0][3] = 0;
+  } else if (ButtonAssignments[ButtonNum][0] == HID_KEY_NUM_LOCK) {
+    LockKeysOrigionalColours[1][0] = 0;
+    LockKeysOrigionalColours[1][1] = 0;
+    LockKeysOrigionalColours[1][2] = 0;
+    LockKeysOrigionalColours[1][3] = 0;
+  } else if (ButtonAssignments[ButtonNum][0] == HID_KEY_SCROLL_LOCK) {
+    LockKeysOrigionalColours[2][0] = 0;
+    LockKeysOrigionalColours[2][1] = 0;
+    LockKeysOrigionalColours[2][2] = 0;
+    LockKeysOrigionalColours[2][3] = 0;
+  }
+  ColourAssignments[ButtonNum][0] = 0;
+  ColourAssignments[ButtonNum][1] = 0;
+  ColourAssignments[ButtonNum][2] = 0;
+  PicoKeypad.illuminate(ButtonNum, 0, 0, 0);
+  PicoKeypad.update();
+  ButtonAssignments[ButtonNum][0] = 0;
+  ButtonAssignments[ButtonNum][1] = 0;
+  ButtonAssignments[ButtonNum][2] = 0;
 }
 
 // ButtonNum varies from 0 to 15.
 void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, int KeyCode, int ModifierKeys, int KeyboardType) {
-    ColourAssignments[ButtonNum][0] = r;
-    ColourAssignments[ButtonNum][1] = g;
-    ColourAssignments[ButtonNum][2] = b;
-    PicoKeypad.illuminate(ButtonNum, r, g, b);
-    PicoKeypad.update();
-    ButtonAssignments[ButtonNum][0] = KeyCode;
-    ButtonAssignments[ButtonNum][1] = ModifierKeys;
-    ButtonAssignments[ButtonNum][2] = KeyboardType;
+  // if the user is using any lock keys set them up
+  if (KeyCode == HID_KEY_CAPS_LOCK) {
+    LockKeysOrigionalColours[0][0] = r;
+    LockKeysOrigionalColours[0][1] = g;
+    LockKeysOrigionalColours[0][2] = b;
+    LockKeysOrigionalColours[0][3] = ButtonNum;
+  } else if (KeyCode == HID_KEY_NUM_LOCK) {
+    LockKeysOrigionalColours[1][0] = r;
+    LockKeysOrigionalColours[1][1] = g;
+    LockKeysOrigionalColours[1][2] = b;
+    LockKeysOrigionalColours[1][3] = ButtonNum;
+  } else if (KeyCode == HID_KEY_SCROLL_LOCK) {
+    LockKeysOrigionalColours[2][0] = r;
+    LockKeysOrigionalColours[2][1] = g;
+    LockKeysOrigionalColours[2][2] = b;
+    LockKeysOrigionalColours[2][3] = ButtonNum;
+  }
+  ColourAssignments[ButtonNum][0] = r;
+  ColourAssignments[ButtonNum][1] = g;
+  ColourAssignments[ButtonNum][2] = b;
+  PicoKeypad.illuminate(ButtonNum, r, g, b);
+  PicoKeypad.update();
+  ButtonAssignments[ButtonNum][0] = KeyCode;
+  ButtonAssignments[ButtonNum][1] = ModifierKeys;
+  ButtonAssignments[ButtonNum][2] = KeyboardType;
 }
 
 

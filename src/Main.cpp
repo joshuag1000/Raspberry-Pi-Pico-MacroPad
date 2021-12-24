@@ -27,7 +27,7 @@ int main() {
     // Ready the device
     InitializeDevice();
 
-    // Setup our keys
+    // Setup our keys These are just the keys I personally use.
     SetupButton(0, 0x00, 0x00, 0x20, HID_KEY_O, KEYBOARD_MODIFIER_LEFTCTRL + KEYBOARD_MODIFIER_LEFTSHIFT, REPORT_ID_KEYBOARD);
     SetupButton(1, 0x00, 0x20, 0x00, HID_KEY_ARROW_UP, KEYBOARD_MODIFIER_LEFTCTRL, REPORT_ID_KEYBOARD);
     SetupButton(2, 0x20, 0x05, 0x20, HID_USAGE_CONSUMER_PLAY_PAUSE, 0, REPORT_ID_CONSUMER_CONTROL);
