@@ -12,7 +12,9 @@ The Code cannot be published pre-compiled because all of the keybinds are set in
 There are some bugs in the code. They will be worked out when i have time
 
 ## To Do:
- - Fix Strange button behavour.
+ - Add dim timer
+ - Make Blinking task optional
+ - Add Caps, Num and scroll lock led status options.
 
 # Links
 https://thepihut.com/products/raspberry-pi-pico <br>

@@ -320,10 +320,10 @@ void MacropadLoop(void)
 
     button_states = PicoKeypad.get_button_states();
     // Check to see if a button was pressed and that it was not the same as the last check. Allows us to avoid duplicate registers.
-    if (last_button_states != button_states && button_states)
+    if (last_button_states != button_states)
     {
       last_button_states = button_states;
-      if (button_states)
+      if (button_states > 0)
       {
         uint8_t ButtonLEDAddr = 0;
         // convert the number into the 0 - 15 address for the led. Uses a binary shift to perform this calcualtion.
