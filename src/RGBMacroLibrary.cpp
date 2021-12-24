@@ -379,6 +379,7 @@ void MacropadLoop(bool UseBlinking, int DimLedDuration)
         {
           // Check if the system is ready and if it isn't show a red key
           PicoKeypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
+          // Send the keypress for the pressed key.
           SendKeypress(ButtonAssignments[ButtonLEDAddr][2], true, ButtonAssignments[ButtonLEDAddr][0], ButtonAssignments[ButtonLEDAddr][1]);
         }
         else

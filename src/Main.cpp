@@ -14,6 +14,15 @@ enum
   REPORT_ID_TINYPICO = 4
 };
 
+
+//------------------------------------------------------------------------------------------------------------------------+
+// Useful info:
+// The RGBMacroLibrary uses 2 of the RP2040's timers.
+// To find out what keys work you can look here: https://github.com/hathach/tinyusb/blob/master/src/class/hid/hid.h
+// Any keys in the REPORT_ID_KEYBOARD and REPORT_ID_CONSUMER_CONTROL devices will work.
+//------------------------------------------------------------------------------------------------------------------------+
+
+// Code enters here.
 int main() {
     // Ready the device
     InitializeDevice();
@@ -38,11 +47,11 @@ int main() {
     SetupButton(13, 0x00, 0x00, 0x00, HID_KEY_NUM_LOCK, 0, REPORT_ID_KEYBOARD);
     SetupButton(14, 0x00, 0x00, 0x00, HID_KEY_SCROLL_LOCK, 0, REPORT_ID_KEYBOARD);
     SetupButton(15, 0x00, 0x20, 0x20, HID_KEY_L, KEYBOARD_MODIFIER_LEFTGUI, REPORT_ID_KEYBOARD);
-    //RemoveButtonSetup(ButtonNum); // Use this to remove a buttons config
+    //RemoveButtonSetup(ButtonNum); // Use this to remove a buttons config.
 
     while (true)
     {
-        // Run the libraries loop to handle keypresses.
+        // Run the libraries loop to handle keypresses. False disables the blinking task, 300000 is the sleep timer duration in ms.
         MacropadLoop(false, 300000);
     }
     
