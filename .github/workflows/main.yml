@@ -28,7 +28,7 @@ jobs:
       # Cloned Pimorini's Librarys needed for the code
       - name: Clone Pimoroni librarys
         run: |
-          git clone https://github.com/pimoroni/pimoroni-pico.git ./ExternalLib/pimoroni-pico
+          git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
 
       # Preps the environment
       - name: Prepare Enviroment
@@ -46,7 +46,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          make -j4
+          make
           
       - uses: actions/upload-artifact@v2
         with:
