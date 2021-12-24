@@ -39,3 +39,5 @@ cmake-*
 **/old
 .vscode
 *.7z
+
+**/OLD-Binary*
