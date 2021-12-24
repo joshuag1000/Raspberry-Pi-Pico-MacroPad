@@ -18,9 +18,6 @@
 // Declarations
 //--------------------------------------------------------------------+
 
-// This will be used to reference our keypad in our code.
-extern pimoroni::PicoRGBKeypad pico_keypad;
-
 
 enum
 {
@@ -28,13 +25,11 @@ enum
 };
 
 // We are using this array to store the button assignments the user has setup.
-int ButtonAssignments[16][3] = { 0};
+int ButtonAssignments[16][3] = { 0 };
 
 // This array is to be used to store button colours so we can reset the colour after the buttonpress
-int ColourAssignments[16][3] = { 0 };
+uint8_t ColourAssignments[16][3] = { 0 };
 
-void led_blinking_task(void);
-void hid_task(void);
 uint16_t button_states = 0;
 uint16_t last_button_states = 0;
 
@@ -235,34 +230,38 @@ void led_blinking_task(void)
 // Library Code
 //--------------------------------------------------------------------+
 
-// ButtonNum varies from 0 to 15.
-void SetupButton(int ButtonNum, uint8_t r, uint8_t g, uint8_t b, int KeyCode, int ModifierKeys, int KeyboardType) {
-    ColourAssignments[ButtonNum][0] = r;
-    ColourAssignments[ButtonNum][1] = g;
-    ColourAssignments[ButtonNum][2] = b;
-    pico_keypad.illuminate(ButtonNum, r, g, b);
-    pico_keypad.update();
-    ButtonAssignments[ButtonNum][0] = KeyCode;
-    ButtonAssignments[ButtonNum][1] = ModifierKeys;
-    ButtonAssignments[ButtonNum][2] = KeyboardType;
-}
+// This will be used to reference our keypad in our code.
+pimoroni::PicoRGBKeypad PicoKeypad;
 
 void RemoveButtonSetup(int ButtonNum) {
     ColourAssignments[ButtonNum][0] = 0;
     ColourAssignments[ButtonNum][1] = 0;
     ColourAssignments[ButtonNum][2] = 0;
-    pico_keypad.illuminate(ButtonNum, 0, 0, 0);
-    pico_keypad.update();
+    PicoKeypad.illuminate(ButtonNum, 0, 0, 0);
+    PicoKeypad.update();
     ButtonAssignments[ButtonNum][0] = 0;
     ButtonAssignments[ButtonNum][1] = 0;
     ButtonAssignments[ButtonNum][2] = 0;
 }
 
+// ButtonNum varies from 0 to 15.
+void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, int KeyCode, int ModifierKeys, int KeyboardType) {
+    ColourAssignments[ButtonNum][0] = r;
+    ColourAssignments[ButtonNum][1] = g;
+    ColourAssignments[ButtonNum][2] = b;
+    PicoKeypad.illuminate(ButtonNum, r, g, b);
+    PicoKeypad.update();
+    ButtonAssignments[ButtonNum][0] = KeyCode;
+    ButtonAssignments[ButtonNum][1] = ModifierKeys;
+    ButtonAssignments[ButtonNum][2] = KeyboardType;
+}
+
+
 // Just a simple function to be called that allows us to setup the TinyUSB
-void InitializeDevice() {
+void InitializeDevice(void) {
     // init the keypad
-    pico_keypad.init();
-    pico_keypad.set_brightness(1.0f);
+    PicoKeypad.init();
+    PicoKeypad.set_brightness(1.0f);
     board_init();
     tusb_init();
 }
@@ -274,9 +273,9 @@ int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
 {
     for (int i = 0; i <= 15; i++)
     {
-        pico_keypad.illuminate(i, ColourAssignments[i][0], ColourAssignments[i][1], ColourAssignments[i][2]);
+        PicoKeypad.illuminate(i, ColourAssignments[i][0], ColourAssignments[i][1], ColourAssignments[i][2]);
     }
-    pico_keypad.update();
+    PicoKeypad.update();
     TimerCancelled = true;
     return 0;
 }
@@ -286,7 +285,7 @@ This will be added into the loop for void main this function will handle the det
 Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 tud_hid_report_complete_cb() is used to send the next report after previous one is complete
 */
-void MacropadLoop() {
+void MacropadLoop(void) {
     tud_task(); // tinyusb device task
     led_blinking_task();
     // Poll every 10ms
@@ -296,7 +295,7 @@ void MacropadLoop() {
     if ( board_millis() - start_ms < interval_ms) return; // not enough time
     start_ms += interval_ms;
 
-    button_states = pico_keypad.get_button_states();
+    button_states = PicoKeypad.get_button_states();
 
     // Remote wakeup
     if ( tud_suspended() && (button_states > 0) )
@@ -312,7 +311,7 @@ void MacropadLoop() {
             last_button_states = button_states;
             if (button_states)
             { 
-                int ButtonLEDAddr = 0;
+                uint8_t ButtonLEDAddr = 0;
                 // convert the number into the 0 - 15 address for the led. Uses a binary shift to perform this calcualtion.
                 unsigned int number = button_states;
                 while (number >>= 1)
@@ -320,27 +319,27 @@ void MacropadLoop() {
 
                 // If the user has specified our custom keyboard then we need to make sure that we handle it.
                 if (ButtonAssignments[ButtonLEDAddr][2] == REPORT_ID_TINYPICO) { 
-                    for (uint8_t i = 0; i < pimoroni::PicoRGBKeypad::NUM_PADS; i++)
+                    for (uint8_t i = 0; i < 16; i++)
                     {
-                        pico_keypad.illuminate(i, 0x00, 0x00, 0x00);
+                        PicoKeypad.illuminate(i, 0x00, 0x00, 0x00);
                     }
-                    pico_keypad.update();
+                    PicoKeypad.update();
                     reset_usb_boot(0, 0);
                 // Check to see if the keypad is actually ready for a keypress
                 }else if (tud_hid_ready())
                 {
                     // Check if the system is ready and if it isn't show a red key
-                    pico_keypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
+                    PicoKeypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
                     send_hid_report(ButtonAssignments[ButtonLEDAddr][2], true, ButtonAssignments[ButtonLEDAddr][0], ButtonAssignments[ButtonLEDAddr][1]);
                 }
                 else
                 {
                     for (int i = 0; i <= 15; i++)
                     {
-                        pico_keypad.illuminate(i, 0x20, 0x00, 0x00);
+                        PicoKeypad.illuminate(i, 0x20, 0x00, 0x00);
                     }
                 }
-                pico_keypad.update();
+                PicoKeypad.update();
 
                 // Start the timer to reset the colours after 300ms.
                 if (TimerCancelled == true)

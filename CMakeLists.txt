@@ -31,7 +31,7 @@ endfunction(add_resource)
 include(example_auto_set_url.cmake)
 
 add_subdirectory(libs/pimoroni-pico/drivers)
-add_subdirectory(libs/pimoroni-pico/libraries)
+add_subdirectory(libs/pimoroni-pico/libraries/pico_rgb_keypad)
 
 # Add our binaries
 add_subdirectory(src)
