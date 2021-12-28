@@ -108,7 +108,7 @@ void SendKeypress(uint8_t report_id, bool ButtonPressed, int KeyCode, int Modifi
   {
     case REPORT_ID_KEYBOARD:
     {
-      if ( ButtonPressed )
+      if ( ButtonPressed && !has_consumer_key )
       {
         uint8_t keycode[6] = {KeyCode, 0, 0, 0, 0, 0};
         tud_hid_keyboard_report(REPORT_ID_KEYBOARD, Modifiers, keycode);
@@ -124,7 +124,7 @@ void SendKeypress(uint8_t report_id, bool ButtonPressed, int KeyCode, int Modifi
 
     case REPORT_ID_CONSUMER_CONTROL:
     {
-      if ( ButtonPressed )
+      if ( ButtonPressed && !has_keyboard_key )
       {
         // volume down
         uint16_t ComsumerKeyCode = KeyCode;
