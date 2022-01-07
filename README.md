@@ -4,6 +4,7 @@ This code allows you to use the Pimoroni RGB Keypad for the Pico as a macro keyp
 Setting what keybind each key is really easy to do and the code is written in a way that makes it easy to change what each key does.<br>
 
 <br>
+This code uses the TinyUSB library in order to perform the hid keyboard responses.
 To find the possible keys that can be used visit here: https://github.com/hathach/tinyusb/blob/master/src/class/hid/hid.h <br>
 ONLY KEYS FROM THE NORMAL KEYBOARD AND THE CONSUMER KEYBOARD are supported by default you will have to add any other keyboards yourself. Modifier keys such as CTRL and ALT can only be used with the normal keyboard.<br>
 The Code cannot be published pre-compiled because all of the keybinds are set in the code. <br>
