@@ -24,3 +24,4 @@ This has been tested on: <br>
  - Raspberry Pi Pico: https://shop.pimoroni.com/products/raspberry-pi-pico?variant=32402092294227 https://thepihut.com/products/raspberry-pi-pico
  - With the Pimoroni RGB Keypad Base: https://shop.pimoroni.com/products/pico-rgb-keypad-base 
  - Compiled on Fedora 35 and Ubuntu 20.04 LTS using the latest pico-sdk, Pimoroni Libraries on 24/12/2021
+
