@@ -27,7 +27,7 @@ enum
 };
 
 // We are using this array to store the button assignments the user has setup.
-int ButtonAssignments[16][3] = { 0 };
+uint8_t ButtonAssignments[16][3] = { 0 };
 
 // This array is to be used to store button colours so we can reset the colour after the buttonpress
 uint8_t ColourAssignments[16][3] = { 0 };
@@ -99,7 +99,7 @@ bool has_keyboard_key = false;
 // use to avoid send multiple consecutive zero report
 bool has_consumer_key = false;
 
-void SendKeypress(uint8_t report_id, bool ButtonPressed, int KeyCode, int Modifiers)
+void SendKeypress(uint8_t report_id, bool ButtonPressed, uint8_t KeyCode, int Modifiers)
 {
   // skip if hid is not ready yet
   if ( !tud_hid_ready() ) return;
