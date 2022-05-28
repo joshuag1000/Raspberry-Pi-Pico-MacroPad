@@ -99,7 +99,7 @@ bool has_keyboard_key = false;
 // use to avoid send multiple consecutive zero report
 bool has_consumer_key = false;
 
-void SendKeypress(uint8_t report_id, bool ButtonPressed, uint8_t KeyCode, int Modifiers)
+void SendKeypress(uint8_t report_id, bool ButtonPressed, uint8_t KeyCode, uint8_t Modifiers)
 {
   // skip if hid is not ready yet
   if ( !tud_hid_ready() ) return;
@@ -290,7 +290,7 @@ void RemoveButtonSetup(int ButtonNum) {
 }
 
 // ButtonNum varies from 0 to 15.
-void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, int KeyCode, int ModifierKeys, int KeyboardType) {
+void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t KeyCode, uint8_t ModifierKeys, uint8_t KeyboardType) {
   // if the user is using any lock keys set them up
   if (KeyCode == HID_KEY_CAPS_LOCK) {
     LockKeysOrigionalColours[0][0] = r;
