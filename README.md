@@ -5,10 +5,10 @@ Setting what keybind each key is really easy to do and the code is written in a 
 It is advised that you clone the latest version of the code when you want to use this project rather than using the latest release. The latest release might not contain the latest version of the code. <br>
 The latest version of the code can be downloaded here: [Download](https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/archive/refs/heads/main.zip)
 
-<br>
+## TinyUSB
 This code uses the TinyUSB library in order to perform the hid keyboard responses. <br>
 To find the possible keys that can be used visit here: [TinyUSB hid.h](https://github.com/hathach/tinyusb/blob/master/src/class/hid/hid.h) <br>
-ONLY KEYS FROM THE NORMAL KEYBOARD AND THE CONSUMER KEYBOARD are supported by default you will have to add any other keyboards yourself. Modifier keys such as CTRL and ALT can only be used with the normal keyboard.<br>
+ ONLY KEYS FROM THE NORMAL KEYBOARD AND THE CONSUMER KEYBOARD are supported by default you will have to add any other keyboards yourself. Modifier keys such as CTRL and ALT can only be used with the normal keyboard.<br>
 The Code cannot be published pre-compiled because all of the keybinds are set in the code. <br>
 <br>
 If you run into any bugs please open an issue.
