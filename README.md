@@ -2,8 +2,22 @@
 [![Compile For the Pico.](https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/actions/workflows/main.yml/badge.svg)](https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/actions/workflows/main.yml)<br>
 This code allows you to use the Pimoroni RGB Keypad for the Pico as a macro keypad in C++ <br>
 Setting what keybind each key is really easy to do and the code is written in a way that makes it easy to change what each key does.<br>
-It is advised that you clone the latest version of the code when you want to use this project rather than using the latest release. The latest release might not contain the latest version of the code. <br>
-The latest version of the code can be downloaded here: [Download](https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/archive/refs/heads/main.zip)
+
+## Downloading
+It is advised that you clone the latest version of the code when you want to use this project rather than using the latest release. The latest release might not contain the latest version of the code.
+### HTTP
+The latest version of the code can be downloaded here: [Download](https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/archive/refs/heads/main.zip) <br>
+Just dont forget to include the RGB Keypad library in libs/pimoroni-pico which can be downloaded here: [Pimoroni-Pico](https://github.com/pimoroni/pimoroni-pico/archive/refs/heads/main.zip)
+
+### Git
+Clone the repo:
+``` sh
+git clone https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad.git
+```
+Initialise submodules:
+``` sh
+git submodule update --imit
+```
 
 ## TinyUSB
 This code uses the TinyUSB library in order to perform the hid keyboard responses. <br>
@@ -14,7 +28,7 @@ The Code cannot be published pre-compiled because all of the keybinds are set in
 If you run into any bugs please open an issue.
 
 ## Building
-For building see: https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/730b8ce94454ee2b8776899c23bb157c8112fe9c/.github/workflows/main.yml#L30-L51 <br>
+For building see: https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/730b8ce94454ee2b8776899c23bb157c8112fe9c/.github/workflows/main.yml#L30-L51
 There you will find examples of how to build the code and quickly setup the pico SDK if you have not done that already.
 
 ## To Do:
