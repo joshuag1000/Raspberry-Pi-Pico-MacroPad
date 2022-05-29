@@ -51,7 +51,7 @@ function(add_resource target file)
   target_sources(${ARGV0} PRIVATE ${NAME}.o)
 endfunction(add_resource)
 
-include(example_auto_set_url.cmake)
+include(auto_set_url.cmake)
 
 add_subdirectory(libs/pimoroni-pico/drivers)
 add_subdirectory(libs/pimoroni-pico/libraries/pico_rgb_keypad)
