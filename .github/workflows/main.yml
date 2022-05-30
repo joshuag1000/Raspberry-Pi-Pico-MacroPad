@@ -27,19 +27,18 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      # Preps the environment
+      - name: Prepare Enviroment
+        run: |
+          mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
+          git clone https://github.com/raspberrypi/pico-sdk.git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
+          git submodule update --remote -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk
+
       # Cloned Pimorini's Librarys needed for the code
       - name: Clone Pimoroni librarys
         run: |
           git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
-
-      # Preps the environment
-      - name: Prepare Enviroment
-        run: |
-          wget https://raw.githubusercontent.com/raspberrypi/pico-setup/master/pico_setup.sh
-          export SKIP_VSCODE='1'
-          export SKIP_UART='1'
-          chmod +x ./pico_setup.sh
-          ./pico_setup.sh
+          git submodule update --remote -C ./libs/pimoroni-pico
           
       # Builds the code
       - name: Build Code
