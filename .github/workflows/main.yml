@@ -41,33 +41,41 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Preps the environment
-      - name: Prepare Enviroment
+      # Install Dependencies 
+      - name: Install Dependencies 
         run: |
           sudo apt update
           sudo apt install git cmake gcc-arm-none-eabi gcc g++ gdb-multiarch automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev minicom
+
+      # Setup the SDK
+      - name: Setup the SDK
+        run: |
           mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
           git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/ clone https://github.com/raspberrypi/pico-sdk.git
           git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk submodule update --init --remote
+          
+      # Run the SDK tests - Helps ensure the SDK and our environemnt is good.
+      - name: Run SDK Test runs
+        run: |
           mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
           cmake -S /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk -B /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
           make -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
 
-      # Cloned Pimorini's Librarys needed for the code
+      # Clone Pimorini's Librarys needed for the code
       - name: Clone Pimoroni librarys
         run: |
           git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
           git -C ./libs/pimoroni-pico submodule update --init --remote
           
       # Builds the code
-      - name: Build Code
+      - name: Build the Code
         run: |  
           export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           mkdir build
@@ -75,6 +83,7 @@ jobs:
           cmake ..
           make
           
+      # Upload the artifact
       - uses: actions/upload-artifact@v2
         with:
           name: UF2-Compiled-Binary
