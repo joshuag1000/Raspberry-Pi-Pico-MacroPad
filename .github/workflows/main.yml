@@ -51,6 +51,8 @@ jobs:
       # Preps the environment
       - name: Prepare Enviroment
         run: |
+          sudo apt update
+          sudo apt install git cmake gcc-arm-none-eabi gcc g++ gdb-multiarch automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev minicom
           mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
           git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/ clone https://github.com/raspberrypi/pico-sdk.git
           git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk submodule update --remote
