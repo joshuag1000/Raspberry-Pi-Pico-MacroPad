@@ -52,7 +52,7 @@ jobs:
       - name: Install Dependencies 
         run: |
           sudo apt update
-          sudo apt install git cmake gcc-arm-none-eabi gcc g++ gdb-multiarch automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev minicom
+          sudo apt install git cmake gcc-arm-none-eabi gcc g++ gdb-multiarch automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev minicom openocd
 
       # Setup the SDK
       - name: Setup the SDK
@@ -60,11 +60,11 @@ jobs:
           mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
           git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/ clone https://github.com/raspberrypi/pico-sdk.git
           git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk submodule update --init
-          export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           
       # Run the SDK tests - Helps ensure the SDK and our environemnt is good.
       - name: Run SDK Test runs
         run: |
+          export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
           cmake -S /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk -B /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
           make -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
@@ -78,6 +78,7 @@ jobs:
       # Build the example code from the library useful for further testing
       - name: Build Pimoroni Examples
         run: |
+          export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           mkdir ./libs/pimoroni-pico/build
           cmake -S ./libs/pimoroni-pico -B ./libs/pimoroni-pico/build
           make -C ./libs/pimoroni-pico/build
@@ -85,6 +86,7 @@ jobs:
       # Builds the code
       - name: Build the Code
         run: |  
+          export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           mkdir build
           cd build
           cmake ..
