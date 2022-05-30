@@ -52,14 +52,14 @@ jobs:
       - name: Prepare Enviroment
         run: |
           mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
-          git clone https://github.com/raspberrypi/pico-sdk.git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
-          git submodule update --remote -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk
+          git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/ clone https://github.com/raspberrypi/pico-sdk.git
+          git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk submodule update --remote
 
       # Cloned Pimorini's Librarys needed for the code
       - name: Clone Pimoroni librarys
         run: |
           git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
-          git submodule update --remote -C ./libs/pimoroni-pico
+          git -C ./libs/pimoroni-pico submodule update --remote
           
       # Builds the code
       - name: Build Code
