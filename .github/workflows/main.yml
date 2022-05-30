@@ -74,6 +74,13 @@ jobs:
           git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
           git -C ./libs/pimoroni-pico submodule update --init --remote
           
+      # Build the example code from the library useful for further testing
+      - name: Build Pimoroni Examples
+        run: |
+          mkdir ./libs/pimoroni-pico/build
+          cmake -S ./libs/pimoroni-pico -B ./libs/pimoroni-pico/build
+          make -C ./libs/pimoroni-pico/build
+          
       # Builds the code
       - name: Build the Code
         run: |  
