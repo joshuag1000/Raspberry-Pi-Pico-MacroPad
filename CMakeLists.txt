@@ -34,28 +34,34 @@ project(Pico-MacroPad C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# Import the pimoroni drivers and libraries
-add_subdirectory(libs/pimoroni-pico/drivers)
-add_subdirectory(libs/pimoroni-pico/libraries/pico_rgb_keypad)
+# Check to see if TinyUSB has been included in the SDK
+if (TARGET tinyusb_device)
+  # Import the pimoroni drivers and libraries
+  add_subdirectory(libs/pimoroni-pico/drivers)
+  add_subdirectory(libs/pimoroni-pico/libraries/pico_rgb_keypad)
 
-# Add our binary
-add_executable(
-  Pico-MacroPad
-  src/Main.cpp
-  src/RGBMacroLibrary.cpp
-  src/usb_descriptors.c
-)
+  # Add our binary
+  add_executable(
+    Pico-MacroPad
+    src/Main.cpp
+    src/RGBMacroLibrary.cpp
+    src/usb_descriptors.c
+  )
 
-# Make sure TinyUSB can find tusb_config.h
-target_include_directories(Pico-MacroPad PUBLIC
-        ${CMAKE_CURRENT_LIST_DIR}/src)
+  # Make sure TinyUSB can find tusb_config.h
+  target_include_directories(Pico-MacroPad PUBLIC
+          ${CMAKE_CURRENT_LIST_DIR}/src)
 
-# Set the Pico program information
-pico_set_program_name(Pico-MacroPad "Raspberry Pi Pico MacroPad")
-pico_set_program_version(Pico-MacroPad "2022-05-2")
+  # Set the Pico program information
+  pico_set_program_name(Pico-MacroPad "Raspberry Pi Pico MacroPad")
+  pico_set_program_version(Pico-MacroPad "2022-05-2")
 
-# Pull in pico libraries that we need
-target_link_libraries(Pico-MacroPad PUBLIC pico_stdlib pico_rgb_keypad tinyusb_device tinyusb_board)
+  # Pull in pico libraries that we need
+  target_link_libraries(Pico-MacroPad PUBLIC pico_stdlib pico_rgb_keypad tinyusb_device tinyusb_board)
 
-# create map/bin/hex file etc.
-pico_add_extra_outputs(Pico-MacroPad)
+  # create map/bin/hex file etc.
+  pico_add_extra_outputs(Pico-MacroPad)
+
+elseif(PICO_ON_DEVICE)
+    message(WARNING "not building hello_usb because TinyUSB submodule is not initialized in the SDK")
+endif()
