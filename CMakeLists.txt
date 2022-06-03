@@ -21,40 +21,41 @@
 #  THE SOFTWARE.
 #
 
-cmake_minimum_required(VERSION 3.12)
-
-# Pull in PICO SDK (must be before project)
-include(pico_sdk_import.cmake)
-
-project(rgb_keypad_project C CXX ASM)
+cmake_minimum_required(VERSION 3.13)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-# Initialize the SDK
+# Pull in Raspberry Pi Pico SDK
+include(pico_sdk_import.cmake)
+
+# Define our project
+project(Pico-MacroPad C CXX ASM)
+
+# Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-function(add_resource target file)
-  get_filename_component(NAME ${ARGV1} NAME_WE)
-  set(FILENAME ${ARGV1})
-
-  add_custom_command(
-    OUTPUT ${NAME}.o
-
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}
-            ${CMAKE_CURRENT_BINARY_DIR}
-
-    COMMAND arm-none-eabi-ld -r -b binary -o ${NAME}.o ${FILENAME}
-    DEPENDS ${FILENAME}
-  )
-
-  target_sources(${ARGV0} PRIVATE ${NAME}.o)
-endfunction(add_resource)
-
-include(auto_set_url.cmake)
-
+# Import the pimoroni drivers and libraries
 add_subdirectory(libs/pimoroni-pico/drivers)
 add_subdirectory(libs/pimoroni-pico/libraries/pico_rgb_keypad)
 
-# Add our binaries
-add_subdirectory(src)
+# Add our binary
+add_executable(
+  Pico-MacroPad
+  src/Main.cpp
+  src/RGBMacroLibrary.cpp
+  src/usb_descriptors.c
+)
+
+# Make sure TinyUSB can find tusb_config.h
+target_include_directories(Pico-MacroPad PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/src)
+
+# Set the Pico program information
+pico_set_program_name(Pico-MacroPad "Raspberry Pi Pico MacroPad")
+pico_set_program_version(Pico-MacroPad "2022-05-2")
+
+# Pull in pico libraries that we need
+target_link_libraries(Pico-MacroPad PUBLIC pico_stdlib pico_rgb_keypad tinyusb_device tinyusb_board)
+
+# create map/bin/hex file etc.
+pico_add_extra_outputs(Pico-MacroPad)
