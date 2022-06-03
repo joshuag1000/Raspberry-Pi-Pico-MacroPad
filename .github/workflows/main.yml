@@ -95,6 +95,6 @@ jobs:
       # Upload the artifact
       - uses: actions/upload-artifact@v2
         with:
-          name: UF2-Compiled-Binary
-          path: ./build/src/rgb_keypad.uf2
+          name: UF2-Compiled-Binary.uf2
+          path: ./build/Pico-MacroPad.uf2
           retention-days: 60
