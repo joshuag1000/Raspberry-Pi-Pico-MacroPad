@@ -63,5 +63,5 @@ if (TARGET tinyusb_device)
   pico_add_extra_outputs(Pico-MacroPad)
 
 elseif(PICO_ON_DEVICE)
-    message(WARNING "not building hello_usb because TinyUSB submodule is not initialized in the SDK")
+    message(WARNING "not building Pico-MacroPad because TinyUSB submodule is not initialized in the SDK")
 endif()
