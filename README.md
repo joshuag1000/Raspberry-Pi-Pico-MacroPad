@@ -28,8 +28,12 @@ The Code cannot be published pre-compiled because all of the keybinds are set in
 If you run into any bugs please open an issue.
 
 ## Building
-For building see: https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/730b8ce94454ee2b8776899c23bb157c8112fe9c/.github/workflows/main.yml#L30-L51
-There you will find examples of how to build the code and quickly setup the pico SDK if you have not done that already.
+For building see: 
+https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/f783128d279dbf39f4d0bd7832dd92bec56625e5/.github/workflows/main.yml#L51-L62
+https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/f783128d279dbf39f4d0bd7832dd92bec56625e5/.github/workflows/main.yml#L72-L76
+https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/f783128d279dbf39f4d0bd7832dd92bec56625e5/.github/workflows/main.yml#L86-L93
+
+If you have not used the Pico SDK before I recommend you read this to get started: https://rptl.io/pico-get-started
 
 ## To Do:
  - Attempt to get scroll lock led working
