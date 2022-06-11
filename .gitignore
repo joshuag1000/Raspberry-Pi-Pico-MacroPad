@@ -36,8 +36,3 @@ cmake-*
 *.app
 
 **/build*
-**/old
-.vscode
-*.7z
-
-**/OLD-Binary*
