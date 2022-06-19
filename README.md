@@ -29,9 +29,9 @@ If you run into any bugs please open an issue.
 
 ## Building
 For building see: 
-https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/f783128d279dbf39f4d0bd7832dd92bec56625e5/.github/workflows/main.yml#L51-L62
-https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/f783128d279dbf39f4d0bd7832dd92bec56625e5/.github/workflows/main.yml#L72-L76
-https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/f783128d279dbf39f4d0bd7832dd92bec56625e5/.github/workflows/main.yml#L86-L93
+https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/90debf3c4d497ac0d6c5061a2cab16b4f5a9b88a/.github/workflows/main.yml#L51-L62
+https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/90debf3c4d497ac0d6c5061a2cab16b4f5a9b88a/.github/workflows/main.yml#L72-L76
+https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/90debf3c4d497ac0d6c5061a2cab16b4f5a9b88a/.github/workflows/main.yml#L86-L93
 
 If you have not used the Pico SDK before I recommend you read this to get started: https://rptl.io/pico-get-started
 
