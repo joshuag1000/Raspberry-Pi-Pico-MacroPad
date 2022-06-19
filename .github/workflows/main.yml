@@ -59,7 +59,7 @@ jobs:
         run: |
           mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
           git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/ clone https://github.com/raspberrypi/pico-sdk.git
-          git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk submodule update --init
+          git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk submodule update --init --recursive
           
       # Run the SDK tests - Helps ensure the SDK and our environemnt is good.
       - name: Run SDK Test runs
@@ -73,7 +73,7 @@ jobs:
       - name: Clone Pimoroni librarys
         run: |
           git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
-          git -C ./libs/pimoroni-pico submodule update --init --remote
+          git -C ./libs/pimoroni-pico submodule update --init --recursive
           
       # Build the example code from the library useful for further testing
       - name: Build Pimoroni Examples
