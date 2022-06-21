@@ -55,8 +55,8 @@ jobs:
         
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
+    #- name: Autobuild
+    #  uses: github/codeql-action/autobuild@v2
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
@@ -67,6 +67,33 @@ jobs:
     # - run: |
     #   echo "Run, Build Application using script"
     #   ./location_of_script_within_repo/buildscript.sh
+    
+    # Install Dependencies 
+    - name: Install Dependencies 
+      run: |
+        sudo apt update
+        sudo apt install git cmake gcc-arm-none-eabi gcc g++ gdb-multiarch automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev minicom openocd
+      # Setup the SDK
+    - name: Setup the SDK
+      run: |
+        mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
+        git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/ clone https://github.com/raspberrypi/pico-sdk.git
+        git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk submodule update --init --recursive
+
+      # Clone Pimorini's Librarys needed for the code
+    - name: Clone Pimoroni librarys
+      run: |
+        git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
+        git -C ./libs/pimoroni-pico submodule update --init --recursive
+        
+        # Builds the code
+    - name: Build the Code
+      run: |  
+        export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
+        mkdir build
+        cd build
+        cmake ..
+        make
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
