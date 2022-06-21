@@ -23,9 +23,8 @@
  *
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+// Standard library includes.
+#include "pico/stdlib.h"
 // Include TinyUSB libraries. We do this so we can easily reference our tinyusb keyboard keybinds.
 #include "tusb.h"
 #include "bsp/board.h"
@@ -70,6 +69,8 @@ int main() {
 
     SetupButton(12, 0x00, 0x00, 0x00, HID_KEY_CAPS_LOCK, 0, REPORT_ID_KEYBOARD);
     SetupButton(13, 0x00, 0x00, 0x00, HID_KEY_NUM_LOCK, 0, REPORT_ID_KEYBOARD);
+    // Uncomment this line if you want to use scroll lock. Comment the line below if you don't want to use it. (dont forget to update the line below)
+    //SetupButton(14, 0x00, 0x00, 0x00, HID_KEY_SCROLL_LOCK, 0, REPORT_ID_KEYBOARD);
     SetupButton(14, 0x00, 0x20, 0x00, HID_KEY_T, KEYBOARD_MODIFIER_LEFTCTRL + KEYBOARD_MODIFIER_LEFTALT, REPORT_ID_KEYBOARD);
     SetupButton(15, 0x00, 0x20, 0x20, HID_KEY_L, KEYBOARD_MODIFIER_LEFTGUI, REPORT_ID_KEYBOARD);
     //RemoveButtonSetup(ButtonNum); // Use this to remove a buttons config.

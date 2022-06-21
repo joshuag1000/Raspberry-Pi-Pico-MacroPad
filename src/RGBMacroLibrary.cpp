@@ -23,10 +23,7 @@
  *
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+// Standard library includes.
 #include "pico/stdlib.h"
 // Include TinyUSB libraries.
 #include "bsp/board.h"
@@ -61,7 +58,6 @@ uint16_t button_states = 0;
 uint16_t last_button_states = 0;
 #define MaxBrightness 1.0f
 #define MinBrightness 0.2f
-
 
 
 // This is all of the tiny usb code with a few modifications pulled from the example at: https://github.com/hathach/tinyusb/blob/master/examples/device/hid_composite/src/main.c
@@ -124,7 +120,7 @@ bool has_keyboard_key = false;
 // use to avoid send multiple consecutive zero report
 bool has_consumer_key = false;
 
-void SendKeypress(uint8_t report_id, bool ButtonPressed, uint8_t KeyCode, uint8_t Modifiers)
+void SendKeypress(uint8_t report_id, uint8_t KeyCode, uint8_t Modifiers)
 {
   // skip if hid is not ready yet
   if ( !tud_hid_ready() ) return;
@@ -133,34 +129,23 @@ void SendKeypress(uint8_t report_id, bool ButtonPressed, uint8_t KeyCode, uint8_
   {
     case REPORT_ID_KEYBOARD:
     {
-      if ( ButtonPressed && !has_consumer_key )
+      if (!has_consumer_key )
       {
         uint8_t keycode[6] = {KeyCode, 0, 0, 0, 0, 0};
         tud_hid_keyboard_report(REPORT_ID_KEYBOARD, Modifiers, keycode);
         has_keyboard_key = true;
-      }else
-      {
-        // send empty key report if previously has key pressed
-        if (has_keyboard_key) tud_hid_keyboard_report(REPORT_ID_KEYBOARD, 0, NULL);
-        has_keyboard_key = false;
       }
     }
     break;
 
     case REPORT_ID_CONSUMER_CONTROL:
     {
-      if ( ButtonPressed && !has_keyboard_key )
+      if (!has_keyboard_key )
       {
         // volume down
         uint16_t ComsumerKeyCode = KeyCode;
         tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &ComsumerKeyCode, 2);
         has_consumer_key = true;
-      }else
-      {
-        // send empty key report (release key) if previously has key pressed
-        uint16_t empty_key = 0;
-        if (has_consumer_key) tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &empty_key, 2);
-        has_consumer_key = false;
       }
     }
     break;
@@ -240,24 +225,24 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
         ColourAssignments[LockKeysOrigionalColours[1][3]][2] = LockKeysOrigionalColours[1][2];
       }
       // Handle Scroll Lock 
-      // if (kbd_leds & KEYBOARD_LED_SCROLLLOCK) {
-      //   if (LockKeysOrigionalColours[2][3] == 0) return;
-      //   // Scroll lock is on
-      //   ColourAssignments[LockKeysOrigionalColours[2][3]][0] = 0x20;
-      //   ColourAssignments[LockKeysOrigionalColours[2][3]][1] = 0x20;
-      //   ColourAssignments[LockKeysOrigionalColours[2][3]][2] = 0x20;
-      // } else {
-      //   if (LockKeysOrigionalColours[2][3] == 0) return;
-      //   // Scroll lock is off
-      //   ColourAssignments[LockKeysOrigionalColours[2][3]][0] = LockKeysOrigionalColours[2][0];
-      //   ColourAssignments[LockKeysOrigionalColours[2][3]][1] = LockKeysOrigionalColours[2][1];
-      //   ColourAssignments[LockKeysOrigionalColours[2][3]][2] = LockKeysOrigionalColours[2][2];
-      // }
+      if (kbd_leds & KEYBOARD_LED_SCROLLLOCK) {
+        if (LockKeysOrigionalColours[2][3] == 0) return;
+        // Scroll lock is on
+        ColourAssignments[LockKeysOrigionalColours[2][3]][0] = 0x20;
+        ColourAssignments[LockKeysOrigionalColours[2][3]][1] = 0x20;
+        ColourAssignments[LockKeysOrigionalColours[2][3]][2] = 0x20;
+      } else {
+        if (LockKeysOrigionalColours[2][3] == 0) return;
+        // Scroll lock is off
+        ColourAssignments[LockKeysOrigionalColours[2][3]][0] = LockKeysOrigionalColours[2][0];
+        ColourAssignments[LockKeysOrigionalColours[2][3]][1] = LockKeysOrigionalColours[2][1];
+        ColourAssignments[LockKeysOrigionalColours[2][3]][2] = LockKeysOrigionalColours[2][2];
+      }
 
       // Set the key colours
       PicoKeypad.illuminate(LockKeysOrigionalColours[0][3], ColourAssignments[LockKeysOrigionalColours[0][3]][0], ColourAssignments[LockKeysOrigionalColours[0][3]][1], ColourAssignments[LockKeysOrigionalColours[0][3]][2]);
       PicoKeypad.illuminate(LockKeysOrigionalColours[1][3], ColourAssignments[LockKeysOrigionalColours[1][3]][0], ColourAssignments[LockKeysOrigionalColours[1][3]][1], ColourAssignments[LockKeysOrigionalColours[1][3]][2]);
-      //PicoKeypad.illuminate(LockKeysOrigionalColours[2][3], ColourAssignments[LockKeysOrigionalColours[2][3]][0], ColourAssignments[LockKeysOrigionalColours[2][3]][1], ColourAssignments[LockKeysOrigionalColours[2][3]][2]);
+      PicoKeypad.illuminate(LockKeysOrigionalColours[2][3], ColourAssignments[LockKeysOrigionalColours[2][3]][0], ColourAssignments[LockKeysOrigionalColours[2][3]][1], ColourAssignments[LockKeysOrigionalColours[2][3]][2]);
       PicoKeypad.update();
     }
   }
@@ -468,22 +453,27 @@ void MacropadLoop(bool UseBlinking, int DimLedDuration)
         }
         else if (tud_hid_ready())
         {
-          // Check if the system is ready and if it isn't show a red key
-          PicoKeypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
+          if (!(ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_CAPS_LOCK || ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_NUM_LOCK || ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_SCROLL_LOCK)) 
+          {
+            // If the key is not a modifier key then we need to send it to the keyboard.
+            // Change the colour of the led to the assigned colour
+            PicoKeypad.illuminate(ButtonLEDAddr, 0x20, 0x20, 0x00);
+          }
           // Send the keypress for the pressed key.
-          SendKeypress(ButtonAssignments[ButtonLEDAddr][2], true, ButtonAssignments[ButtonLEDAddr][0], ButtonAssignments[ButtonLEDAddr][1]);
+          SendKeypress(ButtonAssignments[ButtonLEDAddr][2], ButtonAssignments[ButtonLEDAddr][0], ButtonAssignments[ButtonLEDAddr][1]);
         }
         else
         {
           for (int i = 0; i <= 15; i++)
           {
+            // Device not ready. Set all the leds to red.
             PicoKeypad.illuminate(i, 0x20, 0x00, 0x00);
           }
         }
         PicoKeypad.update();
 
         // Start the timer to reset the colours after 300ms.
-        if (TimerCancelled == true)
+        if (TimerCancelled == true && !(ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_CAPS_LOCK || ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_NUM_LOCK || ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_SCROLL_LOCK))
         {
           TimerCancelled = false;
           add_alarm_in_ms(300, ResetLEDsRepeat, NULL, false);
