@@ -70,7 +70,7 @@ jobs:
           make -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
 
       # Clone Pimorini's Librarys needed for the code
-      - name: Clone Pimoroni librarys
+      - name: Clone Pimoroni libraries
         run: |
           git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
           git -C ./libs/pimoroni-pico submodule update --init --recursive
