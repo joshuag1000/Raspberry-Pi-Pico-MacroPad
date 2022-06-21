@@ -16,7 +16,7 @@ git clone https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad.git
 ```
 Initialise submodules:
 ``` sh
-git submodule update --imit
+git submodule update --init --recursive
 ```
 
 ## TinyUSB
