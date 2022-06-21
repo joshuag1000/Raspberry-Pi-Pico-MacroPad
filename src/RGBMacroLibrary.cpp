@@ -49,16 +49,15 @@ enum
 };
 
 // We are using this array to store the button assignments the user has setup.
-uint8_t ButtonAssignments[16][3] = { 0 };
+uint8_t ButtonAssignments[16][3];
 
 // This array is to be used to store button colours so we can reset the colour after the buttonpress
-uint8_t ColourAssignments[16][3] = { 0 };
+uint8_t ColourAssignments[16][3];
 
 uint16_t button_states = 0;
 uint16_t last_button_states = 0;
 #define MaxBrightness 1.0f
 #define MinBrightness 0.2f
-
 
 // This is all of the tiny usb code with a few modifications pulled from the example at: https://github.com/hathach/tinyusb/blob/master/examples/device/hid_composite/src/main.c
 // My code is below.
@@ -72,7 +71,8 @@ uint16_t last_button_states = 0;
  * - 1000 ms : device mounted
  * - 2500 ms : device is suspended
  */
-enum  {
+enum
+{
   BLINK_NOT_MOUNTED = 250,
   BLINK_MOUNTED = 1000,
   BLINK_SUSPENDED = 2500,
@@ -101,7 +101,7 @@ void tud_umount_cb(void)
 // Within 7ms, device must draw an average of current less than 2.5 mA from bus
 void tud_suspend_cb(bool remote_wakeup_en)
 {
-  (void) remote_wakeup_en;
+  (void)remote_wakeup_en;
   blink_interval_ms = BLINK_SUSPENDED;
 }
 
@@ -123,41 +123,43 @@ bool has_consumer_key = false;
 void SendKeypress(uint8_t report_id, uint8_t KeyCode, uint8_t Modifiers)
 {
   // skip if hid is not ready yet
-  if ( !tud_hid_ready() ) return;
+  if (!tud_hid_ready())
+    return;
 
-  switch(report_id)
+  switch (report_id)
   {
-    case REPORT_ID_KEYBOARD:
+  case REPORT_ID_KEYBOARD:
+  {
+    if (!has_consumer_key)
     {
-      if (!has_consumer_key )
-      {
-        uint8_t keycode[6] = {KeyCode, 0, 0, 0, 0, 0};
-        tud_hid_keyboard_report(REPORT_ID_KEYBOARD, Modifiers, keycode);
-        has_keyboard_key = true;
-      }
+      uint8_t keycode[6] = {KeyCode, 0, 0, 0, 0, 0};
+      tud_hid_keyboard_report(REPORT_ID_KEYBOARD, Modifiers, keycode);
+      has_keyboard_key = true;
     }
-    break;
+  }
+  break;
 
-    case REPORT_ID_CONSUMER_CONTROL:
+  case REPORT_ID_CONSUMER_CONTROL:
+  {
+    if (!has_keyboard_key)
     {
-      if (!has_keyboard_key )
-      {
-        // volume down
-        uint16_t ComsumerKeyCode = KeyCode;
-        tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &ComsumerKeyCode, 2);
-        has_consumer_key = true;
-      }
+      // volume down
+      uint16_t ComsumerKeyCode = KeyCode;
+      tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &ComsumerKeyCode, 2);
+      has_consumer_key = true;
     }
-    break;
+  }
+  break;
 
-    default: break;
+  default:
+    break;
   }
 }
 
 // Invoked when sent REPORT successfully to host
 // Application can use this to send the next report
 // Note: For composite reports, report[0] is report ID
-void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint8_t len)
+void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report, uint8_t len)
 {
   // we do not use this but im leaving it in to avoid issues
 }
@@ -165,25 +167,25 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint8_t
 // Invoked when received GET_REPORT control request
 // Application must fill buffer report's content and return its length.
 // Return zero will cause the stack to STALL request
-uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t* buffer, uint16_t reqlen)
+uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen)
 {
   // TODO not Implemented
-  (void) instance;
-  (void) report_id;
-  (void) report_type;
-  (void) buffer;
-  (void) reqlen;
+  (void)instance;
+  (void)report_id;
+  (void)report_type;
+  (void)buffer;
+  (void)reqlen;
 
   return 0;
 }
 
-uint8_t LockKeysOrigionalColours[3][4] = { 0 };
+uint8_t LockKeysOrigionalColours[3][4];
 
 // Invoked when received SET_REPORT control request or
 // received data on OUT endpoint ( Report ID = 0, Type = 0 )
-void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const* buffer, uint16_t bufsize)
+void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize)
 {
-  (void) instance;
+  (void)instance;
 
   if (report_type == HID_REPORT_TYPE_OUTPUT)
   {
@@ -191,58 +193,74 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
     if (report_id == REPORT_ID_KEYBOARD)
     {
       // bufsize should be (at least) 1
-      if ( bufsize < 1 ) return;
+      if (bufsize < 1)
+        return;
 
       uint8_t const kbd_leds = buffer[0];
-      // Handle Caps Lock 
-      if (kbd_leds & KEYBOARD_LED_CAPSLOCK)
-      {
-        if (LockKeysOrigionalColours[0][3] == 0) return;
-        // Caps lock is on if the user has a caps lock button light the Button light
-        ColourAssignments[LockKeysOrigionalColours[0][3]][0] = 0x20;
-        ColourAssignments[LockKeysOrigionalColours[0][3]][1] = 0x20;
-        ColourAssignments[LockKeysOrigionalColours[0][3]][2] = 0x20;
-      }else
-      {
-        if (LockKeysOrigionalColours[0][3] == 0) return;
-        // Caps Lock is not on
-        ColourAssignments[LockKeysOrigionalColours[0][3]][0] = LockKeysOrigionalColours[0][0];
-        ColourAssignments[LockKeysOrigionalColours[0][3]][1] = LockKeysOrigionalColours[0][1];
-        ColourAssignments[LockKeysOrigionalColours[0][3]][2] = LockKeysOrigionalColours[0][2];
-      }
-      // Handle Num Lock 
-      if (kbd_leds & KEYBOARD_LED_NUMLOCK) {
-        if (LockKeysOrigionalColours[1][3] == 0) return;
-        // Numlock is on
-        ColourAssignments[LockKeysOrigionalColours[1][3]][0] = 0x20;
-        ColourAssignments[LockKeysOrigionalColours[1][3]][1] = 0x20;
-        ColourAssignments[LockKeysOrigionalColours[1][3]][2] = 0x20;
-      } else {
-        if (LockKeysOrigionalColours[1][3] == 0) return;
-        // Numlock is off
-        ColourAssignments[LockKeysOrigionalColours[1][3]][0] = LockKeysOrigionalColours[1][0];
-        ColourAssignments[LockKeysOrigionalColours[1][3]][1] = LockKeysOrigionalColours[1][1];
-        ColourAssignments[LockKeysOrigionalColours[1][3]][2] = LockKeysOrigionalColours[1][2];
-      }
-      // Handle Scroll Lock 
-      if (kbd_leds & KEYBOARD_LED_SCROLLLOCK) {
-        if (LockKeysOrigionalColours[2][3] == 0) return;
-        // Scroll lock is on
-        ColourAssignments[LockKeysOrigionalColours[2][3]][0] = 0x20;
-        ColourAssignments[LockKeysOrigionalColours[2][3]][1] = 0x20;
-        ColourAssignments[LockKeysOrigionalColours[2][3]][2] = 0x20;
-      } else {
-        if (LockKeysOrigionalColours[2][3] == 0) return;
-        // Scroll lock is off
-        ColourAssignments[LockKeysOrigionalColours[2][3]][0] = LockKeysOrigionalColours[2][0];
-        ColourAssignments[LockKeysOrigionalColours[2][3]][1] = LockKeysOrigionalColours[2][1];
-        ColourAssignments[LockKeysOrigionalColours[2][3]][2] = LockKeysOrigionalColours[2][2];
-      }
 
       // Set the key colours
-      PicoKeypad.illuminate(LockKeysOrigionalColours[0][3], ColourAssignments[LockKeysOrigionalColours[0][3]][0], ColourAssignments[LockKeysOrigionalColours[0][3]][1], ColourAssignments[LockKeysOrigionalColours[0][3]][2]);
-      PicoKeypad.illuminate(LockKeysOrigionalColours[1][3], ColourAssignments[LockKeysOrigionalColours[1][3]][0], ColourAssignments[LockKeysOrigionalColours[1][3]][1], ColourAssignments[LockKeysOrigionalColours[1][3]][2]);
-      PicoKeypad.illuminate(LockKeysOrigionalColours[2][3], ColourAssignments[LockKeysOrigionalColours[2][3]][0], ColourAssignments[LockKeysOrigionalColours[2][3]][1], ColourAssignments[LockKeysOrigionalColours[2][3]][2]);
+      // Check if the key is actually set
+      if (LockKeysOrigionalColours[0][3] != 0)
+      {
+        // Handle Caps Lock
+        if (kbd_leds & KEYBOARD_LED_CAPSLOCK)
+        {
+          // Caps lock is on if the user has a caps lock button light the Button light
+          ColourAssignments[LockKeysOrigionalColours[0][3]][0] = 0x20;
+          ColourAssignments[LockKeysOrigionalColours[0][3]][1] = 0x20;
+          ColourAssignments[LockKeysOrigionalColours[0][3]][2] = 0x20;
+        }
+        else
+        {
+          // Caps Lock is not on
+          ColourAssignments[LockKeysOrigionalColours[0][3]][0] = LockKeysOrigionalColours[0][0];
+          ColourAssignments[LockKeysOrigionalColours[0][3]][1] = LockKeysOrigionalColours[0][1];
+          ColourAssignments[LockKeysOrigionalColours[0][3]][2] = LockKeysOrigionalColours[0][2];
+        }
+        PicoKeypad.illuminate(LockKeysOrigionalColours[0][3], ColourAssignments[LockKeysOrigionalColours[0][3]][0], ColourAssignments[LockKeysOrigionalColours[0][3]][1], ColourAssignments[LockKeysOrigionalColours[0][3]][2]);
+      }
+
+      // Check if the key is actually set
+      if (LockKeysOrigionalColours[1][3] != 0)
+      {
+        // Handle Num Lock
+        if (kbd_leds & KEYBOARD_LED_NUMLOCK)
+        {
+          // Numlock is on
+          ColourAssignments[LockKeysOrigionalColours[1][3]][0] = 0x20;
+          ColourAssignments[LockKeysOrigionalColours[1][3]][1] = 0x20;
+          ColourAssignments[LockKeysOrigionalColours[1][3]][2] = 0x20;
+        }
+        else
+        {
+          // Numlock is off
+          ColourAssignments[LockKeysOrigionalColours[1][3]][0] = LockKeysOrigionalColours[1][0];
+          ColourAssignments[LockKeysOrigionalColours[1][3]][1] = LockKeysOrigionalColours[1][1];
+          ColourAssignments[LockKeysOrigionalColours[1][3]][2] = LockKeysOrigionalColours[1][2];
+        }
+        PicoKeypad.illuminate(LockKeysOrigionalColours[1][3], ColourAssignments[LockKeysOrigionalColours[1][3]][0], ColourAssignments[LockKeysOrigionalColours[1][3]][1], ColourAssignments[LockKeysOrigionalColours[1][3]][2]);
+      }
+
+      // Check if the key is actually set
+      if (LockKeysOrigionalColours[2][3] != 0)
+      {
+        // Handle Scroll Lock
+        if (kbd_leds & KEYBOARD_LED_SCROLLLOCK)
+        {
+          // Scroll lock is on
+          ColourAssignments[LockKeysOrigionalColours[2][3]][0] = 0x20;
+          ColourAssignments[LockKeysOrigionalColours[2][3]][1] = 0x20;
+          ColourAssignments[LockKeysOrigionalColours[2][3]][2] = 0x20;
+        }
+        else
+        {
+          // Scroll lock is off
+          ColourAssignments[LockKeysOrigionalColours[2][3]][0] = LockKeysOrigionalColours[2][0];
+          ColourAssignments[LockKeysOrigionalColours[2][3]][1] = LockKeysOrigionalColours[2][1];
+          ColourAssignments[LockKeysOrigionalColours[2][3]][2] = LockKeysOrigionalColours[2][2];
+        }
+        PicoKeypad.illuminate(LockKeysOrigionalColours[2][3], ColourAssignments[LockKeysOrigionalColours[2][3]][0], ColourAssignments[LockKeysOrigionalColours[2][3]][1], ColourAssignments[LockKeysOrigionalColours[2][3]][2]);
+      }
       PicoKeypad.update();
     }
   }
@@ -257,10 +275,12 @@ void led_blinking_task(void)
   static bool led_state = false;
 
   // blink is disabled
-  if (!blink_interval_ms) return;
+  if (!blink_interval_ms)
+    return;
 
   // Blink every interval ms
-  if ( board_millis() - start_ms < blink_interval_ms) return; // not enough time
+  if (board_millis() - start_ms < blink_interval_ms)
+    return; // not enough time
   start_ms += blink_interval_ms;
 
   board_led_write(led_state);
@@ -271,19 +291,25 @@ void led_blinking_task(void)
 // Library Code
 //--------------------------------------------------------------------+
 
-void RemoveButtonSetup(int ButtonNum) {
+void RemoveButtonSetup(int ButtonNum)
+{
   // if the key is a lock key clear it
-  if (ButtonAssignments[ButtonNum][0] == HID_KEY_CAPS_LOCK) {
+  if (ButtonAssignments[ButtonNum][0] == HID_KEY_CAPS_LOCK)
+  {
     LockKeysOrigionalColours[0][0] = 0;
     LockKeysOrigionalColours[0][1] = 0;
     LockKeysOrigionalColours[0][2] = 0;
     LockKeysOrigionalColours[0][3] = 0;
-  } else if (ButtonAssignments[ButtonNum][0] == HID_KEY_NUM_LOCK) {
+  }
+  else if (ButtonAssignments[ButtonNum][0] == HID_KEY_NUM_LOCK)
+  {
     LockKeysOrigionalColours[1][0] = 0;
     LockKeysOrigionalColours[1][1] = 0;
     LockKeysOrigionalColours[1][2] = 0;
     LockKeysOrigionalColours[1][3] = 0;
-  } else if (ButtonAssignments[ButtonNum][0] == HID_KEY_SCROLL_LOCK) {
+  }
+  else if (ButtonAssignments[ButtonNum][0] == HID_KEY_SCROLL_LOCK)
+  {
     LockKeysOrigionalColours[2][0] = 0;
     LockKeysOrigionalColours[2][1] = 0;
     LockKeysOrigionalColours[2][2] = 0;
@@ -300,19 +326,25 @@ void RemoveButtonSetup(int ButtonNum) {
 }
 
 // ButtonNum varies from 0 to 15.
-void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t KeyCode, uint8_t ModifierKeys, uint8_t KeyboardType) {
+void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t KeyCode, uint8_t ModifierKeys, uint8_t KeyboardType)
+{
   // if the user is using any lock keys set them up
-  if (KeyCode == HID_KEY_CAPS_LOCK) {
+  if (KeyCode == HID_KEY_CAPS_LOCK)
+  {
     LockKeysOrigionalColours[0][0] = r;
     LockKeysOrigionalColours[0][1] = g;
     LockKeysOrigionalColours[0][2] = b;
     LockKeysOrigionalColours[0][3] = ButtonNum;
-  } else if (KeyCode == HID_KEY_NUM_LOCK) {
+  }
+  else if (KeyCode == HID_KEY_NUM_LOCK)
+  {
     LockKeysOrigionalColours[1][0] = r;
     LockKeysOrigionalColours[1][1] = g;
     LockKeysOrigionalColours[1][2] = b;
     LockKeysOrigionalColours[1][3] = ButtonNum;
-  } else if (KeyCode == HID_KEY_SCROLL_LOCK) {
+  }
+  else if (KeyCode == HID_KEY_SCROLL_LOCK)
+  {
     LockKeysOrigionalColours[2][0] = r;
     LockKeysOrigionalColours[2][1] = g;
     LockKeysOrigionalColours[2][2] = b;
@@ -328,28 +360,26 @@ void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t Key
   ButtonAssignments[ButtonNum][2] = KeyboardType;
 }
 
-
 // Just a simple function to be called that allows us to setup the TinyUSB
-void InitializeDevice(void) {
-    // init the keypad
-    PicoKeypad.init();
-    PicoKeypad.set_brightness(MaxBrightness);
-    board_init();
-    tusb_init();
+void InitializeDevice(void)
+{
+  // init the keypad
+  PicoKeypad.init();
+  PicoKeypad.set_brightness(MaxBrightness);
+  board_init();
+  tusb_init();
 }
-
-
 
 bool TimerCancelled = true;
 int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
 {
-    for (int i = 0; i <= 15; i++)
-    {
-        PicoKeypad.illuminate(i, ColourAssignments[i][0], ColourAssignments[i][1], ColourAssignments[i][2]);
-    }
-    PicoKeypad.update();
-    TimerCancelled = true;
-    return 0;
+  for (int i = 0; i <= 15; i++)
+  {
+    PicoKeypad.illuminate(i, ColourAssignments[i][0], ColourAssignments[i][1], ColourAssignments[i][2]);
+  }
+  PicoKeypad.update();
+  TimerCancelled = true;
+  return 0;
 }
 
 // simple timer that will DIM the led's when called. The timer is started below.
@@ -357,14 +387,14 @@ struct repeating_timer timer;
 bool LEDDimClock = false;
 bool DimLEDTimer(struct repeating_timer *t)
 {
-    PicoKeypad.set_brightness(MinBrightness);
-    PicoKeypad.update();
-    LEDDimClock = false;
-    cancel_repeating_timer(&timer);
-    return true;
+  PicoKeypad.set_brightness(MinBrightness);
+  PicoKeypad.update();
+  LEDDimClock = false;
+  cancel_repeating_timer(&timer);
+  return true;
 }
 
-/* 
+/*
 This will be added into the loop for void main this function will handle the detection of the button presses and handles the keypress too.
 Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 tud_hid_report_complete_cb() is used to send the next report after previous one is complete
@@ -372,7 +402,8 @@ tud_hid_report_complete_cb() is used to send the next report after previous one 
 void MacropadLoop(bool UseBlinking, int DimLedDuration)
 {
   tud_task(); // tinyusb device task
-  if (UseBlinking){
+  if (UseBlinking)
+  {
     led_blinking_task();
   }
   // Poll every 10ms
@@ -453,7 +484,7 @@ void MacropadLoop(bool UseBlinking, int DimLedDuration)
         }
         else if (tud_hid_ready())
         {
-          if (!(ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_CAPS_LOCK || ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_NUM_LOCK || ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_SCROLL_LOCK)) 
+          if (!(ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_CAPS_LOCK || ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_NUM_LOCK || ButtonAssignments[ButtonLEDAddr][0] == HID_KEY_SCROLL_LOCK))
           {
             // If the key is not a modifier key then we need to send it to the keyboard.
             // Change the colour of the led to the assigned colour
