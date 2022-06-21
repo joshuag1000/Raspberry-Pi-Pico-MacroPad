@@ -35,9 +35,6 @@ https://github.com/joshuag1000/Raspberry-Pi-Pico-MacroPad/blob/90debf3c4d497ac0d
 
 If you have not used the Pico SDK before I recommend you read this to get started: https://rptl.io/pico-get-started
 
-## To Do:
- - Attempt to get scroll lock led working
-
 # Links
 [The Pi Hut - Raspberry Pi Pico](https://thepihut.com/products/raspberry-pi-pico) <br>
 [Pimoroni - Raspberry Pi Pico](https://shop.pimoroni.com/products/raspberry-pi-pico?variant=32402092294227) <br>
