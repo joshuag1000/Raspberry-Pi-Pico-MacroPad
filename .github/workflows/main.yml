@@ -53,6 +53,11 @@ jobs:
         run: |
           sudo apt update
           sudo apt install git cmake gcc-arm-none-eabi gcc g++ gdb-multiarch automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev minicom openocd
+          
+      # Get the core count so we can use more than one core for compile
+      - name: Get core count
+        id: core_count
+        run : cat /proc/cpuinfo  | grep processor | wc -l
 
       # Setup the SDK
       - name: Setup the SDK
@@ -67,7 +72,7 @@ jobs:
           export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
           cmake -S /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk -B /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
-          make -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
+          make -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build -j ${{steps.core_count.outputs.output}}
 
       # Clone Pimorini's Librarys needed for the code
       - name: Clone Pimoroni libraries
@@ -81,7 +86,7 @@ jobs:
           export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
           mkdir ./libs/pimoroni-pico/build
           cmake -S ./libs/pimoroni-pico -B ./libs/pimoroni-pico/build
-          make -C ./libs/pimoroni-pico/build
+          make -C ./libs/pimoroni-pico/build -j ${{steps.core_count.outputs.output}}
           
       # Builds the code
       - name: Build the Code
@@ -90,7 +95,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          make
+          make -j ${{steps.core_count.outputs.output}}
           
       # Upload the artifact
       - uses: actions/upload-artifact@v2
