@@ -366,6 +366,10 @@ void InitializeDevice(void)
   // init the keypad
   PicoKeypad.init();
   PicoKeypad.set_brightness(MaxBrightness);
+  // Start the timer that will dim the leds after 5 mins
+  add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
+  LEDDimClock = true;
+  // Initialize TinyUSB
   board_init();
   tusb_init();
 }
