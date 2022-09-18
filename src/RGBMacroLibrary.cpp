@@ -360,20 +360,6 @@ void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t Key
   ButtonAssignments[ButtonNum][2] = KeyboardType;
 }
 
-// Just a simple function to be called that allows us to setup the TinyUSB
-void InitializeDevice(void)
-{
-  // init the keypad
-  PicoKeypad.init();
-  PicoKeypad.set_brightness(MaxBrightness);
-  // Start the timer that will dim the leds after 5 mins
-  add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
-  LEDDimClock = true;
-  // Initialize TinyUSB
-  board_init();
-  tusb_init();
-}
-
 bool TimerCancelled = true;
 int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
 {
@@ -398,12 +384,32 @@ bool DimLEDTimer(struct repeating_timer *t)
   return true;
 }
 
+bool UseBlinking;
+int DimLedDuration;
+
+// Just a simple function to be called that allows us to setup the TinyUSB
+void InitializeDevice(bool iUseBlinking = false, int iDimLedDuration = 300000)
+{
+  // Set the UseBlinking variable to the value passed in and the DimLedDuration to the value passed in
+  UseBlinking = iUseBlinking;
+  DimLedDuration = iDimLedDuration;
+  // init the keypad
+  PicoKeypad.init();
+  PicoKeypad.set_brightness(MaxBrightness);
+  // Start the timer that will dim the leds after 5 mins
+  add_repeating_timer_ms(DimLedDuration, DimLEDTimer, NULL, &timer);
+  LEDDimClock = true;
+  // Initialize TinyUSB
+  board_init();
+  tusb_init();
+}
+
 /*
 This will be added into the loop for void main this function will handle the detection of the button presses and handles the keypress too.
 Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 tud_hid_report_complete_cb() is used to send the next report after previous one is complete
 */
-void MacropadLoop(bool UseBlinking, int DimLedDuration)
+void MacropadLoop(void)
 {
   tud_task(); // tinyusb device task
   if (UseBlinking)

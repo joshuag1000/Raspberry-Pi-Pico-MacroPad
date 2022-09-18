@@ -48,8 +48,9 @@ enum
 
 // Code enters here.
 int main() {
-    // Ready the device
-    InitializeDevice();
+    // Ready the device. False disables the blinking task, 300000 is the sleep timer duration in ms.
+    // If you do not specify a value here it will default to false and 300000 respectively.
+    InitializeDevice(false, 300000);
 
     // Setup our keys These are just the keys I personally use.
     SetupButton(0, 0x20, 0x00, 0x20, HID_KEY_VOLUME_UP, 0, REPORT_ID_KEYBOARD);
@@ -77,8 +78,8 @@ int main() {
 
     while (true)
     {
-        // Run the libraries loop to handle keypresses. False disables the blinking task, 300000 is the sleep timer duration in ms.
-        MacropadLoop(false, 300000);
+        // Run the libraries loop to handle keypresses.
+        MacropadLoop();
     }
     
     return 0;
