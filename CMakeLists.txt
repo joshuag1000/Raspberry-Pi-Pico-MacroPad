@@ -54,7 +54,7 @@ if (TARGET tinyusb_device)
 
   # Set the Pico program information
   pico_set_program_name(Pico-MacroPad "Raspberry Pi Pico MacroPad")
-  pico_set_program_version(Pico-MacroPad "2022-05-2")
+  pico_set_program_version(Pico-MacroPad "2022-09-1")
 
   # Pull in pico libraries that we need
   target_link_libraries(Pico-MacroPad PUBLIC pico_stdlib pico_rgb_keypad tinyusb_device tinyusb_board)
