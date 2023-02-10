@@ -23,8 +23,45 @@
  *
  */
 
-// Define our shared functions
-void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t KeyCode, uint8_t ModifierKeys, uint8_t KeyboardType);
-void RemoveButtonSetup(int ButtonNum);
-void InitializeDevice(bool iUseBlinking = false, int iDimLedDuration = 300000);
-void MacropadLoop(void);
+#ifndef RGBMacroPad_H
+#define RGBMarcoPad_H
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+// Standard library includes.
+#include "pico/stdlib.h"
+// Include TinyUSB libraries.
+#include "bsp/board.h"
+#include "tusb.h"
+#include "usb_descriptors.h"
+
+// We are including this for a button option later.
+#include "pico/bootrom.h"
+
+// Include the RGB Keypad library.
+#include "pico_rgb_keypad.hpp"
+
+#define REPORT_ID_TINYPICO 4
+
+class RGBMacroPad {
+    public:
+        // Variable to define if we are blinking the led or not.
+        bool UseBlinking = false;
+        // Variable to store the Dim LED duration
+        int DimLedDuration = 300000;
+        // Define our shared functions
+        void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t KeyCode, uint8_t ModifierKeys, uint8_t KeyboardType);
+        void RemoveButtonSetup(int ButtonNum);
+        void InitializeDevice();
+        void Loop(void);
+
+    private:
+        void SendKeypress(uint8_t report_id, uint8_t KeyCode, uint8_t Modifiers);
+        static int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data);
+        static bool DimLEDTimer(struct repeating_timer *t);
+
+};
+
+#endif

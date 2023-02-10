@@ -23,18 +23,8 @@
  *
  */
 
-// Standard library includes.
-#include "pico/stdlib.h"
-// Include TinyUSB libraries.
-#include "bsp/board.h"
-#include "tusb.h"
-#include "usb_descriptors.h"
-
-// We are including this for a button option later.
-#include "pico/bootrom.h"
-
-// Include the RGB Keypad library.
-#include "pico_rgb_keypad.hpp"
+// Include our header
+#include "RGBMacroLibrary.hpp"
 
 //--------------------------------------------------------------------+
 // Declarations
@@ -43,42 +33,48 @@
 // This will be used to reference our keypad in our code.
 pimoroni::PicoRGBKeypad PicoKeypad;
 
-enum
-{
-  REPORT_ID_TINYPICO = 4
-};
-
 // We are using this array to store the button assignments the user has setup.
-uint8_t ButtonAssignments[16][3];
+static uint8_t ButtonAssignments[16][3];
 
 // This array is to be used to store button colours so we can reset the colour after the buttonpress
-uint8_t ColourAssignments[16][3];
+static uint8_t ColourAssignments[16][3];
 
+// Used to avoid calling the functions more than once
 uint16_t button_states = 0;
 uint16_t last_button_states = 0;
 #define MaxBrightness 1.0f
 #define MinBrightness 0.2f
 
-// This is all of the tiny usb code with a few modifications pulled from the example at: https://github.com/hathach/tinyusb/blob/master/examples/device/hid_composite/src/main.c
-// My code is below.
-
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
 //--------------------------------------------------------------------+
-
 /* Blink pattern
- * - 250 ms  : device not mounted
- * - 1000 ms : device mounted
- * - 2500 ms : device is suspended
- */
+* - 250 ms  : device not mounted
+* - 1000 ms : device mounted
+* - 2500 ms : device is suspended
+*/
 enum
 {
-  BLINK_NOT_MOUNTED = 250,
-  BLINK_MOUNTED = 1000,
-  BLINK_SUSPENDED = 2500,
+    BLINK_NOT_MOUNTED = 250,
+    BLINK_MOUNTED = 1000,
+    BLINK_SUSPENDED = 2500,
 };
-
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
+
+// use to avoid send multiple consecutive zero report for keyboard
+static bool has_keyboard_key = false;
+// use to avoid send multiple consecutive zero report
+static bool has_consumer_key = false;
+// Used to store the lock keys origional state
+uint8_t LockKeysOrigionalColours[3][4];
+// Used to store the state of the timer
+static bool TimerCancelled;
+// used to define the timer and store its state
+static struct repeating_timer timer;
+static bool LEDDimClock;
+
+// This is all of the tiny usb code with a few modifications pulled from the example at: https://github.com/hathach/tinyusb/blob/master/examples/device/hid_composite/src/main.c
+// My code is below.
 
 //--------------------------------------------------------------------+
 // Device callbacks
@@ -115,12 +111,7 @@ void tud_resume_cb(void)
 // USB HID
 //--------------------------------------------------------------------+
 
-// use to avoid send multiple consecutive zero report for keyboard
-bool has_keyboard_key = false;
-// use to avoid send multiple consecutive zero report
-bool has_consumer_key = false;
-
-void SendKeypress(uint8_t report_id, uint8_t KeyCode, uint8_t Modifiers)
+void RGBMacroPad::SendKeypress(uint8_t report_id, uint8_t KeyCode, uint8_t Modifiers)
 {
   // skip if hid is not ready yet
   if (!tud_hid_ready())
@@ -178,8 +169,6 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id, hid_report_t
 
   return 0;
 }
-
-uint8_t LockKeysOrigionalColours[3][4];
 
 // Invoked when received SET_REPORT control request or
 // received data on OUT endpoint ( Report ID = 0, Type = 0 )
@@ -291,7 +280,7 @@ void led_blinking_task(void)
 // Library Code
 //--------------------------------------------------------------------+
 
-void RemoveButtonSetup(int ButtonNum)
+void RGBMacroPad::RemoveButtonSetup(int ButtonNum)
 {
   // if the key is a lock key clear it
   if (ButtonAssignments[ButtonNum][0] == HID_KEY_CAPS_LOCK)
@@ -326,7 +315,7 @@ void RemoveButtonSetup(int ButtonNum)
 }
 
 // ButtonNum varies from 0 to 15.
-void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t KeyCode, uint8_t ModifierKeys, uint8_t KeyboardType)
+void RGBMacroPad::SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t KeyCode, uint8_t ModifierKeys, uint8_t KeyboardType)
 {
   // if the user is using any lock keys set them up
   if (KeyCode == HID_KEY_CAPS_LOCK)
@@ -360,8 +349,7 @@ void SetupButton(uint8_t ButtonNum, uint8_t r, uint8_t g, uint8_t b, uint8_t Key
   ButtonAssignments[ButtonNum][2] = KeyboardType;
 }
 
-bool TimerCancelled = true;
-int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
+int64_t RGBMacroPad::ResetLEDsRepeat(alarm_id_t id, void *user_data)
 {
   for (int i = 0; i <= 15; i++)
   {
@@ -373,9 +361,7 @@ int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data)
 }
 
 // simple timer that will DIM the led's when called. The timer is started below.
-struct repeating_timer timer;
-bool LEDDimClock = false;
-bool DimLEDTimer(struct repeating_timer *t)
+bool RGBMacroPad::DimLEDTimer(struct repeating_timer *t)
 {
   PicoKeypad.set_brightness(MinBrightness);
   PicoKeypad.update();
@@ -384,15 +370,12 @@ bool DimLEDTimer(struct repeating_timer *t)
   return true;
 }
 
-bool UseBlinking;
-int DimLedDuration;
-
 // Just a simple function to be called that allows us to setup the TinyUSB
-void InitializeDevice(bool iUseBlinking = false, int iDimLedDuration = 300000)
+void RGBMacroPad::InitializeDevice()
 {
-  // Set the UseBlinking variable to the value passed in and the DimLedDuration to the value passed in
-  UseBlinking = iUseBlinking;
-  DimLedDuration = iDimLedDuration;
+  // Set the timer status
+  TimerCancelled = true;
+  LEDDimClock = false;
   // init the keypad
   PicoKeypad.init();
   PicoKeypad.set_brightness(MaxBrightness);
@@ -409,7 +392,7 @@ This will be added into the loop for void main this function will handle the det
 Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
 tud_hid_report_complete_cb() is used to send the next report after previous one is complete
 */
-void MacropadLoop(void)
+void RGBMacroPad::Loop(void)
 {
   tud_task(); // tinyusb device task
   if (UseBlinking)
