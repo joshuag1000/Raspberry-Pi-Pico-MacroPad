@@ -29,22 +29,22 @@ set(CMAKE_CXX_STANDARD 17)
 if (TARGET tinyusb_device)
   # Add our binary
   add_executable(
-    Pico-MacroPad
+    SimpleExample
     Main.cpp
   )
 
   # Make sure TinyUSB can find tusb_config.h
-  target_include_directories(Pico-MacroPad PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+  target_include_directories(SimpleExample PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
   # Set the Pico program information
-  pico_set_program_name(Pico-MacroPad "Raspberry Pi Pico MacroPad")
-  pico_set_program_version(Pico-MacroPad "2023-02-1")
+  pico_set_program_name(SimpleExample "Raspberry Pi Pico MacroPad")
+  pico_set_program_version(SimpleExample "2023-02-1")
 
   # Pull in pico libraries that we need
-  target_link_libraries(Pico-MacroPad PUBLIC pico_stdlib RGBMacroPad)
+  target_link_libraries(SimpleExample PUBLIC pico_stdlib RGBMacroPad)
 
   # create map/bin/hex file etc.
-  pico_add_extra_outputs(Pico-MacroPad)
+  pico_add_extra_outputs(SimpleExample)
 
 elseif(PICO_ON_DEVICE)
     message(WARNING "Not building Pico-MacroPad because TinyUSB submodule is not initialized in the SDK")

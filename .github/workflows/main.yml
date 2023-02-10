@@ -80,14 +80,6 @@ jobs:
           git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
           git -C ./libs/pimoroni-pico submodule update --init --recursive
           
-      # Build the example code from the library useful for further testing to ensure our environemnt is good.
-      - name: Build Pimoroni Examples
-        run: |
-          export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
-          mkdir ./libs/pimoroni-pico/build
-          cmake -S ./libs/pimoroni-pico -B ./libs/pimoroni-pico/build
-          make -C ./libs/pimoroni-pico/build -j ${{steps.core_count.outputs.output}}
-          
       # Builds the code
       - name: Build the Code
         run: |  
@@ -101,5 +93,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: UF2-Compiled-Binary.uf2
-          path: ./build/examples/Simple/Pico-MacroPad.uf2
+          path: ./build/examples/Simple/SimpleExample.uf2
           retention-days: 60

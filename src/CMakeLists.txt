@@ -28,18 +28,18 @@ set(CMAKE_CXX_STANDARD 17)
 # Check to see if TinyUSB has been included in the SDK
 if (TARGET tinyusb_device)
   # Add our library
-  add_library(RGBMacroPad INTERFACE)
+  add_library(libRGBMacroPad INTERFACE)
 
-  target_sources(RGBMacroPad INTERFACE
+  target_sources(libRGBMacroPad INTERFACE
     ${CMAKE_CURRENT_LIST_DIR}/RGBMacroLibrary.cpp
     ${CMAKE_CURRENT_LIST_DIR}/usb_descriptors.c
   )
 
   # Make sure TinyUSB can find tusb_config.h
-  target_include_directories(RGBMacroPad INTERFACE ${CMAKE_CURRENT_LIST_DIR})
+  target_include_directories(libRGBMacroPad INTERFACE ${CMAKE_CURRENT_LIST_DIR})
 
   # Pull in pico libraries that we need
-  target_link_libraries(RGBMacroPad INTERFACE pico_stdlib pico_rgb_keypad tinyusb_device tinyusb_board)
+  target_link_libraries(libRGBMacroPad INTERFACE pico_stdlib pico_rgb_keypad tinyusb_device tinyusb_board)
 
 elseif(PICO_ON_DEVICE)
     message(WARNING "Not building Pico-MacroPad because TinyUSB submodule is not initialized in the SDK")
