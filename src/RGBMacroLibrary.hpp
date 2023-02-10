@@ -56,9 +56,9 @@ class RGBMacroPad {
         void RemoveButtonSetup(int ButtonNum);
         void InitializeDevice();
         void Loop(void);
+        void SendKeypress(uint8_t report_id, uint8_t KeyCode, uint8_t Modifiers);
 
     private:
-        void SendKeypress(uint8_t report_id, uint8_t KeyCode, uint8_t Modifiers);
         static int64_t ResetLEDsRepeat(alarm_id_t id, void *user_data);
         static bool DimLEDTimer(struct repeating_timer *t);
 
