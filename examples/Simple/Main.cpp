@@ -25,7 +25,7 @@
 
 // Standard library includes.
 #include "pico/stdlib.h"
-// Used for specifying our keyboard type.
+// Include our Macropad Library
 #include "RGBMacroLibrary.hpp"
 
 //------------------------------------------------------------------------------------------------------------------------+
