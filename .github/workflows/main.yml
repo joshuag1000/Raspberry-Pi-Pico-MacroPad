@@ -62,28 +62,28 @@ jobs:
       # Setup the SDK
       - name: Setup the SDK
         run: |
-          mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/
-          git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/ clone https://github.com/raspberrypi/pico-sdk.git
-          git -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk submodule update --init --recursive
+          mkdir ${GITHUB_WORKSPACE}/pico/
+          git -C ${GITHUB_WORKSPACE}/pico/ clone https://github.com/raspberrypi/pico-sdk.git
+          git -C ${GITHUB_WORKSPACE}/pico/pico-sdk submodule update --init --recursive
           
       # Run the SDK tests - Helps ensure the SDK and our environemnt is good.
       - name: Run SDK Test runs
         run: |
-          export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
-          mkdir /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
-          cmake -S /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk -B /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build
-          make -C /home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk/build -j ${{steps.core_count.outputs.output}}
+          export PICO_SDK_PATH='${GITHUB_WORKSPACE}/pico/pico-sdk'
+          mkdir ${GITHUB_WORKSPACE}/pico/pico-sdk/build
+          cmake -S ${GITHUB_WORKSPACE}/pico/pico-sdk -B ${GITHUB_WORKSPACE}/pico/pico-sdk/build
+          make -C ${GITHUB_WORKSPACE}/pico/pico-sdk/build -j ${{steps.core_count.outputs.output}}
 
       # Clone Pimorini's Librarys needed for the code
       - name: Clone Pimoroni libraries
         run: |
-          git clone https://github.com/pimoroni/pimoroni-pico.git ./libs/pimoroni-pico
-          git -C ./libs/pimoroni-pico submodule update --init --recursive
+          git clone https://github.com/pimoroni/pimoroni-pico.git ${GITHUB_WORKSPACE}/libs/pimoroni-pico
+          git -C ${GITHUB_WORKSPACE}/libs/pimoroni-pico submodule update --init --recursive
           
       # Builds the code
       - name: Build the Code
         run: |  
-          export PICO_SDK_PATH='/home/runner/work/Raspberry-Pi-Pico-MacroPad/Raspberry-Pi-Pico-MacroPad/pico/pico-sdk'
+          export PICO_SDK_PATH='${GITHUB_WORKSPACE}/pico/pico-sdk'
           mkdir build
           cd build
           cmake ..
@@ -93,5 +93,5 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: UF2-Compiled-Binary.uf2
-          path: ./build/examples/Simple/SimpleExample.uf2
+          path: ${GITHUB_WORKSPACE}/build/examples/Simple/SimpleExample.uf2
           retention-days: 60
