@@ -21,7 +21,7 @@
 #  THE SOFTWARE.
 #
 
-name: Compile For the Pico.
+name: Compile and CodeQL
 
 # Controls when the action will run. 
 on:
@@ -42,11 +42,23 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'cpp' ]
+        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
+        # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
+    env:
+      PICO_SDK_PATH: ${GITHUB_WORKSPACE}/pico/pico-sdk
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Install Dependencies 
       - name: Install Dependencies 
@@ -69,7 +81,6 @@ jobs:
       # Run the SDK tests - Helps ensure the SDK and our environemnt is good.
       - name: Run SDK Test runs
         run: |
-          export PICO_SDK_PATH='${GITHUB_WORKSPACE}/pico/pico-sdk'
           mkdir ${GITHUB_WORKSPACE}/pico/pico-sdk/build
           cmake -S ${GITHUB_WORKSPACE}/pico/pico-sdk -B ${GITHUB_WORKSPACE}/pico/pico-sdk/build
           make -C ${GITHUB_WORKSPACE}/pico/pico-sdk/build -j ${{steps.core_count.outputs.output}}
@@ -80,10 +91,15 @@ jobs:
           git clone https://github.com/pimoroni/pimoroni-pico.git ${GITHUB_WORKSPACE}/libs/pimoroni-pico
           git -C ${GITHUB_WORKSPACE}/libs/pimoroni-pico submodule update --init --recursive
           
+      # Initializes the CodeQL tools for scanning.
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+          
       # Builds the code
       - name: Build the Code
         run: |  
-          export PICO_SDK_PATH='${GITHUB_WORKSPACE}/pico/pico-sdk'
           mkdir build
           cd build
           cmake ..
@@ -95,3 +111,6 @@ jobs:
           name: UF2-Compiled-Binary.uf2
           path: ${GITHUB_WORKSPACE}/build/examples/Simple/SimpleExample.uf2
           retention-days: 60
+          
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
