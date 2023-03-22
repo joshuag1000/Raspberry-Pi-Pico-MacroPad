@@ -104,12 +104,14 @@ jobs:
           cd build
           cmake ..
           make -j ${{steps.core_count.outputs.output}}
+          rm -r ${GITHUB_WORKSPACE}/pico/
+          rm -r ${GITHUB_WORKSPACE}/libs/
           
       # Upload the artifact
       - uses: actions/upload-artifact@v2
         with:
           name: UF2-Compiled-Binary.uf2
-          path: ${{ GITHUB_WORKSPACE }}/build/examples/Simple/SimpleExample.uf2
+          path: ./build/examples/Simple/SimpleExample.uf2
           retention-days: 60
           
       - name: Perform CodeQL Analysis
