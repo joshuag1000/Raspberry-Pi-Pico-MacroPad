@@ -53,7 +53,7 @@ jobs:
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
     env:
-      PICO_SDK_PATH: ${GITHUB_WORKSPACE}/pico/pico-sdk
+      PICO_SDK_PATH: $GITHUB_WORKSPACE/pico/pico-sdk
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
