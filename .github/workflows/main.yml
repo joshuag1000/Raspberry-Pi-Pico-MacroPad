@@ -108,7 +108,7 @@ jobs:
           rm -r ${GITHUB_WORKSPACE}/libs/
           
       # Upload the artifact
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: UF2-Compiled-Binary.uf2
           path: ./build/examples/Simple/SimpleExample.uf2
