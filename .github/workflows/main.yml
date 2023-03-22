@@ -79,7 +79,7 @@ jobs:
       # Run the SDK tests - Helps ensure the SDK and our environemnt is good.
       - name: Run SDK Test runs
         run: |
-          export PICO_SDK_PATH="$GITHUB_WORKSPACE/pico/pico-sdk"
+          export PICO_SDK_PATH="${GITHUB_WORKSPACE}/pico/pico-sdk"
           mkdir ${GITHUB_WORKSPACE}/pico/pico-sdk/build
           cmake -S ${GITHUB_WORKSPACE}/pico/pico-sdk -B ${GITHUB_WORKSPACE}/pico/pico-sdk/build
           make -C ${GITHUB_WORKSPACE}/pico/pico-sdk/build -j ${{steps.core_count.outputs.output}}
@@ -99,7 +99,7 @@ jobs:
       # Builds the code
       - name: Build the Code
         run: |  
-          export PICO_SDK_PATH="$GITHUB_WORKSPACE/pico/pico-sdk"
+          export PICO_SDK_PATH="${GITHUB_WORKSPACE}/pico/pico-sdk"
           mkdir build
           cd build
           cmake ..
@@ -109,7 +109,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: UF2-Compiled-Binary.uf2
-          path: ${GITHUB_WORKSPACE}/build/examples/Simple/SimpleExample.uf2
+          path: ${{ GITHUB_WORKSPACE }}/build/examples/Simple/SimpleExample.uf2
           retention-days: 60
           
       - name: Perform CodeQL Analysis
